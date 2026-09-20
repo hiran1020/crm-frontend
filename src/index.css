@@ -1,0 +1,457 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-surface: #f8fafc;
+  --color-sidebar: #0f172a;
+  --color-sidebar-hover: #1e293b;
+  --color-border: #e2e8f0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: #0f172a;
+  background-color: var(--color-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MODE
+   Color hierarchy:
+     #0a1628  page bg        --color-surface
+     #0f1f35  card bg        .bg-white
+     #162032  subtle bg      .bg-slate-50  (table headers, search input)
+     #1e3045  hover/well     .bg-slate-100
+     #2d4060  borders        --color-border
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html.dark {
+  color-scheme: dark;
+  --color-surface:      #0a1628;
+  --color-border:       #2d4060;
+  --color-sidebar:      #050e1a;
+  --color-sidebar-hover:#0f1f35;
+}
+
+html.dark body {
+  color: #e2e8f0;
+  background-color: var(--color-surface);
+}
+
+/* ── Neutral backgrounds ─────────────────────────────────────────────────── */
+
+html.dark .bg-white           { background-color: #0f1f35; }
+html.dark .bg-slate-50        { background-color: #162032; }
+html.dark .bg-slate-100       { background-color: #1e3045; }
+html.dark .bg-surface         { background-color: var(--color-surface); }
+
+/* ── Neutral text ────────────────────────────────────────────────────────── */
+
+html.dark .text-slate-900     { color: #f1f5f9; }
+html.dark .text-slate-800     { color: #e2e8f0; }
+html.dark .text-slate-700     { color: #cbd5e1; }
+html.dark .text-slate-600     { color: #94a3b8; }
+html.dark .text-slate-500     { color: #64748b; }
+html.dark .text-slate-400     { color: #475569; }
+
+/* ── Neutral borders & dividers ─────────────────────────────────────────── */
+
+html.dark .border-border               { border-color: var(--color-border); }
+html.dark .border-slate-200            { border-color: #2d4060; }
+html.dark .border-slate-100            { border-color: #1e3045; }
+html.dark .border-dashed               { border-color: #2d4060; }
+html.dark .divide-border > * + *       { border-color: var(--color-border); }
+html.dark .divide-slate-200 > * + *    { border-color: #2d4060; }
+
+/* ── Neutral hover states ────────────────────────────────────────────────── */
+
+html.dark .hover\:bg-slate-50:hover    { background-color: #162032; }
+html.dark .hover\:bg-slate-100:hover   { background-color: #1e3045; }
+html.dark .hover\:bg-slate-200:hover   { background-color: #253a52; }
+html.dark .hover\:bg-white:hover       { background-color: #162032; }
+html.dark .hover\:text-slate-800:hover { color: #f1f5f9; }
+html.dark .hover\:text-slate-700:hover { color: #e2e8f0; }
+html.dark .bg-slate-200                { background-color: #253a52; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SEMANTIC / COLORED BACKGROUNDS
+   Pastel (-50) colors are far too light on dark bg. Map them to deep tints.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+html.dark .bg-emerald-50  { background-color: rgba(6,  78,  59,  0.35); }
+html.dark .bg-blue-50     { background-color: rgba(30, 58,  138, 0.35); }
+html.dark .bg-yellow-50   { background-color: rgba(78, 60,  0,   0.35); }
+html.dark .bg-orange-50   { background-color: rgba(78, 35,  0,   0.35); }
+html.dark .bg-red-50      { background-color: rgba(127,29,  29,  0.35); }
+html.dark .bg-purple-50   { background-color: rgba(88, 28,  135, 0.35); }
+html.dark .bg-amber-50    { background-color: rgba(78, 50,  0,   0.35); }
+html.dark .bg-pink-50     { background-color: rgba(131,24,  67,  0.35); }
+html.dark .bg-green-50    { background-color: rgba(20, 83,  45,  0.35); }
+html.dark .bg-slate-200   { background-color: #253040; }
+
+/* Semantic BORDERS — lighter tints so they show against dark card bg */
+html.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3); }
+html.dark .border-blue-200    { border-color: rgba(59, 130, 246, 0.3); }
+html.dark .border-yellow-200  { border-color: rgba(234,179,  8,  0.3); }
+html.dark .border-orange-200  { border-color: rgba(249,115,  22, 0.3); }
+html.dark .border-red-200     { border-color: rgba(239, 68,  68, 0.3); }
+html.dark .border-amber-200   { border-color: rgba(245,158,  11, 0.3); }
+html.dark .border-slate-300   { border-color: #3d5475; }
+
+/* Semantic TEXT — shift from dark-on-light to light-on-dark */
+html.dark .text-emerald-700   { color: #34d399; }
+html.dark .text-emerald-600   { color: #34d399; }
+html.dark .text-blue-700      { color: #60a5fa; }
+html.dark .text-blue-600      { color: #60a5fa; }
+html.dark .text-yellow-700    { color: #fbbf24; }
+html.dark .text-yellow-600    { color: #fbbf24; }
+html.dark .text-orange-700    { color: #fb923c; }
+html.dark .text-orange-600    { color: #fb923c; }
+html.dark .text-red-700       { color: #f87171; }
+html.dark .text-red-600       { color: #f87171; }
+html.dark .text-red-800       { color: #ef4444; }
+html.dark .text-purple-700    { color: #c084fc; }
+html.dark .text-purple-600    { color: #c084fc; }
+html.dark .text-amber-700     { color: #fbbf24; }
+html.dark .text-amber-600     { color: #fbbf24; }
+html.dark .text-amber-900     { color: #fcd34d; }
+html.dark .text-green-700     { color: #4ade80; }
+html.dark .text-pink-700      { color: #f472b6; }
+
+/* Semantic hover overrides */
+html.dark .hover\:bg-emerald-50:hover { background-color: rgba(6,  78,  59,  0.45); }
+html.dark .hover\:bg-red-50:hover     { background-color: rgba(127,29,  29,  0.45); }
+html.dark .hover\:text-emerald-600:hover { color: #34d399; }
+html.dark .hover\:text-red-600:hover     { color: #f87171; }
+html.dark .hover\:text-red-700:hover     { color: #f87171; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FORM ELEMENTS — inputs, selects, textareas, checkboxes
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* Text inputs / textarea / select */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.dark textarea,
+html.dark select {
+  background-color: #0a1628;
+  color: #e2e8f0;
+  border-color: #2d4060;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #475569;
+}
+
+/* Focus ring — subtler in dark mode */
+html.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  border-color: var(--color-brand-500);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  outline: none;
+}
+
+/* Native checkboxes & radio buttons
+   color-scheme:dark  → browser renders them dark (grey bg, visible border)
+   accent-color       → checked/active state uses brand blue                */
+html.dark input[type="checkbox"],
+html.dark input[type="radio"] {
+  color-scheme: dark;
+  accent-color: var(--color-brand-500);
+}
+
+/* Checkbox borders (Tailwind custom classes like border-slate-300) */
+html.dark .border-slate-300 {
+  border-color: #3d5475;
+}
+
+/* Focus ring utility classes */
+html.dark .focus\:ring-brand-100:focus  { box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+html.dark .focus\:ring-red-100:focus    { box-shadow: 0 0 0 2px rgba(239,68,68,0.2); }
+html.dark .ring-2                       { --tw-ring-opacity: 1; }
+
+/* ── Shadows — more opaque on dark backgrounds ───────────────────────────── */
+
+html.dark .shadow-sm  { box-shadow: 0 1px 3px 0   rgba(0,0,0,0.5); }
+html.dark .shadow-md  { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
+html.dark .shadow-lg  { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.6); }
+html.dark .shadow-xl  { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.65); }
+html.dark .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.75); }
+
+/* ── Skeleton loaders ────────────────────────────────────────────────────── */
+
+html.dark .animate-pulse { background-color: #1e3045; }
+
+/* ── Table row hover ────────────────────────────────────────────────────── */
+
+html.dark tbody tr:hover td,
+html.dark tbody tr:hover th {
+  background-color: rgba(30, 48, 69, 0.5);
+}
+
+/* ── Scrollbar (WebKit) ─────────────────────────────────────────────────── */
+
+html.dark ::-webkit-scrollbar              { width: 8px; height: 8px; }
+html.dark ::-webkit-scrollbar-track        { background: var(--color-surface); }
+html.dark ::-webkit-scrollbar-thumb        { background: #2d4060; border-radius: 4px; }
+html.dark ::-webkit-scrollbar-thumb:hover  { background: #3d5475; }
+
+/* ── Amber / warning sections (Settings) ───────────────────────────────── */
+
+html.dark .bg-amber-50   { background-color: rgba(78, 50, 0, 0.35); }
+html.dark .border-amber-200 { border-color: rgba(245,158,11,0.3); }
+html.dark .text-amber-900   { color: #fcd34d; }
+html.dark .text-amber-700   { color: #fbbf24; }
+html.dark .bg-amber-600     { background-color: #d97706; }
+html.dark .hover\:bg-amber-700:hover { background-color: #b45309; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   BRAND COLOR DARK OVERRIDES
+   brand-50 / brand-100 are light blues — too bright on dark bg.
+   ═════════════════════════════════════════════════════════════════════ */
+
+html.dark .bg-brand-50          { background-color: rgba(37, 99, 235, 0.15); }
+html.dark .bg-brand-100         { background-color: rgba(37, 99, 235, 0.25); }
+html.dark .text-brand-700       { color: #60a5fa; }
+html.dark .text-brand-600       { color: #60a5fa; }
+html.dark .border-brand-200     { border-color: rgba(59, 130, 246, 0.3);  }
+html.dark .border-brand-300     { border-color: rgba(59, 130, 246, 0.45); }
+html.dark .hover\:border-brand-200:hover { border-color: rgba(59, 130, 246, 0.4);  }
+html.dark .hover\:border-brand-300:hover { border-color: rgba(59, 130, 246, 0.6);  }
+
+/* ══════════════════════════════════════════════════════════════════════
+   OPACITY-VARIANT BACKGROUNDS
+   Used in: expandable table rows, selected rows, Kanban drag highlight.
+   Tailwind generates e.g. `.bg-slate-50\/60` — the slash must be escaped.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* slate-50 opacity variants → dark navy at matching opacity */
+html.dark .bg-slate-50\/30  { background-color: rgba(15, 31, 53, 0.6);  }
+html.dark .bg-slate-50\/60  { background-color: rgba(15, 31, 53, 0.75); }
+html.dark .bg-slate-50\/80  { background-color: rgba(15, 31, 53, 0.88); }
+
+/* hover slate opacity variants */
+html.dark .hover\:bg-slate-50\/30:hover { background-color: rgba(30, 48, 69, 0.6); }
+html.dark .hover\:bg-slate-50\/80:hover { background-color: rgba(30, 48, 69, 0.9); }
+
+/* brand-50 opacity variants → deep brand tint */
+html.dark .bg-brand-50\/30  { background-color: rgba(37, 99, 235, 0.10); }
+html.dark .bg-brand-50\/40  { background-color: rgba(37, 99, 235, 0.14); }
+html.dark .bg-brand-50\/60  { background-color: rgba(37, 99, 235, 0.20); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   SEMANTIC -100 SHADE BACKGROUNDS  (AI Insights buttons, stat cards)
+   These are lighter tints of semantic colors — need to be darkened.
+   ═════════════════════════════════════════════════════════════════════ */
+
+html.dark .bg-emerald-100  { background-color: rgba(6,   78,  59,  0.45); }
+html.dark .bg-blue-100     { background-color: rgba(30,  58,  138, 0.45); }
+html.dark .bg-purple-100   { background-color: rgba(88,  28,  135, 0.45); }
+html.dark .bg-amber-100    { background-color: rgba(78,  50,  0,   0.45); }
+html.dark .bg-orange-100   { background-color: rgba(78,  35,  0,   0.45); }
+html.dark .bg-red-100      { background-color: rgba(127, 29,  29,  0.45); }
+html.dark .bg-yellow-100   { background-color: rgba(78,  60,  0,   0.45); }
+html.dark .bg-pink-100     { background-color: rgba(131, 24,  67,  0.45); }
+
+/* Darker text on -100 backgrounds → shift to -300 range */
+html.dark .text-emerald-800 { color: #6ee7b7; }
+html.dark .text-blue-800    { color: #93c5fd; }
+html.dark .text-purple-800  { color: #d8b4fe; }
+html.dark .text-amber-800   { color: #fcd34d; }
+html.dark .text-orange-800  { color: #fdba74; }
+html.dark .text-red-800     { color: #fca5a5; }
+html.dark .text-yellow-800  { color: #fde047; }
+
+/* Hover states for -100 and -200 buttons */
+html.dark .hover\:bg-emerald-200:hover { background-color: rgba(6,   78,  59,  0.6);  }
+html.dark .hover\:bg-blue-200:hover    { background-color: rgba(30,  58,  138, 0.6);  }
+html.dark .hover\:bg-purple-200:hover  { background-color: rgba(88,  28,  135, 0.6);  }
+html.dark .hover\:bg-amber-200:hover   { background-color: rgba(78,  50,  0,   0.6);  }
+html.dark .hover\:bg-orange-200:hover  { background-color: rgba(78,  35,  0,   0.6);  }
+html.dark .hover\:bg-red-200:hover     { background-color: rgba(127, 29,  29,  0.6);  }
+html.dark .hover\:bg-yellow-200:hover  { background-color: rgba(78,  60,  0,   0.6);  }
+
+/* Active (click) states */
+html.dark .active\:bg-emerald-300:active { background-color: rgba(6,   78,  59,  0.75); }
+html.dark .active\:bg-blue-300:active    { background-color: rgba(30,  58,  138, 0.75); }
+html.dark .active\:bg-purple-300:active  { background-color: rgba(88,  28,  135, 0.75); }
+html.dark .active\:bg-amber-300:active   { background-color: rgba(78,  50,  0,   0.75); }
+html.dark .active\:bg-orange-300:active  { background-color: rgba(78,  35,  0,   0.75); }
+html.dark .active\:bg-red-300:active     { background-color: rgba(127, 29,  29,  0.75); }
+
+/* ── Accordion / inline expand animation ────────────────────────────────────
+   Used wherever a row or card expands to reveal details in place.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+@keyframes accordion-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.accordion-open {
+  animation: accordion-down 0.18s ease-out both;
+}
+
+/* ── Sidebar scrollbar — subtle, matches dark background ────────────────────
+   Shows only when content overflows (24+ nav items on short screens).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.sidebar-scroll {
+  scrollbar-width: thin;                   /* Firefox */
+  scrollbar-color: #334155 transparent;   /* Firefox: thumb track */
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 2px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
+/* ── Mobile / touch improvements ─────────────────────────────────────────────
+   Applied globally for a better mobile experience on all screen sizes.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Ensure all interactive elements meet minimum 44px tap target (WCAG 2.5.5) */
+button, [role="button"], a, input[type="checkbox"], input[type="radio"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth overscroll for scrollable containers */
+.overflow-x-auto,
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Kanban board: enable horizontal touch scrolling with scroll-snap */
+.kanban-scroll {
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+.kanban-scroll > * {
+  scroll-snap-align: start;
+}
+
+/* Modal backdrop — tighter on mobile */
+@media (max-width: 639px) {
+  .modal-backdrop {
+    padding: 0.5rem !important;
+    align-items: flex-end !important; /* slide up from bottom on mobile */
+  }
+  .modal-panel {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    max-height: 92vh !important;
+  }
+}
+
+/* Calendar day cells: minimum height on mobile */
+@media (max-width: 639px) {
+  .calendar-day {
+    min-height: 3.5rem !important;
+  }
+}
+
+/* ── Print styles ────────────────────────────────────────────────────────────
+   Applied when user clicks "Print" or browser opens print dialog.
+   Hides app chrome; makes quotes / reports look like real documents.
+   ─────────────────────────────────────────────────────────────────────────── */
+@media print {
+  /* Hide everything except the printable content */
+  aside,
+  header,
+  nav,
+  .print\:hidden,
+  button:not(.print\:show),
+  [role="dialog"],
+  [role="alertdialog"],
+  .fixed {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: #0f172a !important;
+    font-size: 11pt;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .print\:block { display: block !important; }
+  .print\:full  { width: 100% !important; max-width: none !important; }
+
+  /* Quote document */
+  .quote-document {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 2cm !important;
+  }
+
+  /* Tables — keep borders */
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #cbd5e1; padding: 6pt 8pt; }
+
+  /* Page breaks */
+  .page-break-before { page-break-before: always; }
+  .page-break-avoid  { page-break-inside: avoid; }
+
+  /* Reset dark mode for print */
+  html.dark * {
+    background-color: white !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+  }
+}
