@@ -149,8 +149,9 @@ export function DealDetailsPage() {
     )
   }
 
-  const deal = dealQuery.data
-  if (!deal) return null
+  const maybeDeal = dealQuery.data
+  if (!maybeDeal) return null
+  const deal = maybeDeal
 
   const customers = customersQuery.data?.data ?? []
   const customer = customers.find((c) => c.id === deal.customerId)

@@ -66,7 +66,7 @@ export function CustomerFormModal({
         status: customer.status,
         owner: customer.owner as (typeof MOCK_OWNERS)[number],
       })
-      setCustomFieldValues((customer.customFields as Record<string, unknown>) ?? {})
+      setCustomFieldValues(((customer as unknown as Record<string, unknown>).customFields as Record<string, unknown>) ?? {})
     } else {
       reset(defaultValues)
       setCustomFieldValues({})

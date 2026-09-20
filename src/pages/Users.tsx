@@ -44,7 +44,7 @@ export function UsersPage() {
       acc[u.role] = (acc[u.role] ?? 0) + 1
       return acc
     },
-    { admin: 0, manager: 0, sales_agent: 0 },
+    { admin: 0, manager: 0, sales_agent: 0, support: 0 },
   )
 
   function handleEdit(user: CrmUser) {

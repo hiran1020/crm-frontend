@@ -5,7 +5,7 @@ export const dealFormSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
   customerId: z.string().trim().min(1, 'Customer is required'),
   amount: z
-    .number({ invalid_type_error: 'Amount must be a number' })
+    .number({ error: 'Amount must be a number' })
     .positive('Amount must be greater than 0'),
   stage: z.enum(['New', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost']),
   owner: z.enum(MOCK_OWNERS, { message: 'Select an owner' }),

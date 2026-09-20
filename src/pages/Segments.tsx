@@ -532,7 +532,6 @@ export function SegmentsPage() {
         title="Delete segment"
         description={`Are you sure you want to delete "${deleting?.name}"? This cannot be undone.`}
         confirmLabel="Delete"
-        variant="danger"
         onConfirm={() => void handleDelete()}
         onCancel={() => setDeleting(null)}
       />

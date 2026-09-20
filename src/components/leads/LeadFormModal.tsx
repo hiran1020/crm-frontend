@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, type ReactNode } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { MOCK_OWNERS } from '@/constants/auth'
 import { leadFormSchema, type LeadFormValues } from '@/schemas/lead'
 import type { Lead } from '@/types/lead'
@@ -40,7 +40,7 @@ export function LeadFormModal({
     reset,
     formState: { errors },
   } = useForm<LeadFormValues>({
-    resolver: zodResolver(leadFormSchema),
+    resolver: zodResolver(leadFormSchema) as Resolver<LeadFormValues>,
     defaultValues,
     mode: 'onBlur',
   })

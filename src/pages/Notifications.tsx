@@ -1,5 +1,4 @@
 import {
-  Activity,
   Bell,
   BriefcaseIcon,
   Check,

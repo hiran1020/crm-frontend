@@ -25,12 +25,6 @@ const STAGE_PROBABILITY: Record<string, number> = {
   Lost: 0,
 }
 
-function getMonthLabel(monthsAgo: number): string {
-  const d = new Date()
-  d.setMonth(d.getMonth() - monthsAgo)
-  return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-}
-
 function buildMonthlyTrend(deals: Deal[]) {
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date()
@@ -164,7 +158,7 @@ export function ForecastingPage() {
             <YAxis tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} tick={{ fill: tickColor, fontSize: 11 }} />
             <Tooltip
               contentStyle={tooltipStyle}
-              formatter={(value: number) => [formatCurrency(value)]}
+              formatter={(value) => [formatCurrency((value as number) ?? 0)]}
             />
             <Area
               type="monotone"

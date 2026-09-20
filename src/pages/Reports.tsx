@@ -184,13 +184,6 @@ export function ReportsPage() {
     )
   }, [allLeads, dateRange])
 
-  const activities = useMemo(() => {
-    if (!dateRange) return allActivities
-    return allActivities.filter(
-      (a) => (a.createdAt ?? '') >= dateRange.from && (a.createdAt ?? '') <= dateRange.to,
-    )
-  }, [allActivities, dateRange])
-
   // Derived data
   const wonDeals = deals.filter((d) => d.stage === 'Won')
   const lostDeals = deals.filter((d) => d.stage === 'Lost')
@@ -380,7 +373,7 @@ export function ReportsPage() {
                   <XAxis dataKey="stage" tick={{ fontSize: 12, fill: tickColor }} axisLine={false} tickLine={false} />
                   <YAxis yAxisId="left" orientation="left" tick={{ fontSize: 12, fill: tickColor }} axisLine={false} tickLine={false} width={30} />
                   <YAxis yAxisId="right" orientation="right" tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: tickColor }} axisLine={false} tickLine={false} width={50} />
-                  <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => name === 'value' ? [formatCurrency(value), 'Value'] : [value, 'Count']} />
+                  <Tooltip contentStyle={tooltipStyle} formatter={(value, name) => (name === 'value' ? [formatCurrency((value as number) ?? 0), 'Value'] : [value as number, 'Count'])} />
                   <Legend />
                   <Bar yAxisId="left" dataKey="count" name="Count" radius={[4, 4, 0, 0]} maxBarSize={40}>
                     {pipelineData.map((entry) => (
@@ -400,12 +393,12 @@ export function ReportsPage() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                    <Pie data={leadSourceData} cx="50%" cy="50%" outerRadius={100} dataKey="value" nameKey="name" label={({ name, percent }: { name: string; percent: number }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                    <Pie data={leadSourceData} cx="50%" cy="50%" outerRadius={100} dataKey="value" nameKey="name" label={({ name, percent }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false}>
                       {leadSourceData.map((_entry, index) => (
                         <Cell key={index} fill={LEAD_SOURCE_COLORS[index % LEAD_SOURCE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value: number, name: string) => [value, name]} />
+                    <Tooltip contentStyle={tooltipStyle} formatter={(value, name) => [value as number, name as string]} />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
@@ -490,7 +483,7 @@ export function ReportsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: tickColor }} axisLine={false} tickLine={false} />
                 <YAxis tickFormatter={(v: number) => `$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12, fill: tickColor }} axisLine={false} tickLine={false} width={48} />
-                <Tooltip contentStyle={tooltipStyle} formatter={(value: number) => [formatCurrency(value), 'Revenue']} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value) => [formatCurrency((value as number) ?? 0), 'Revenue']} />
                 <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={2} fill="url(#revenueGrad)" />
               </AreaChart>
             </ResponsiveContainer>

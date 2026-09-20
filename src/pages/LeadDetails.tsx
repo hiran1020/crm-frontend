@@ -139,8 +139,9 @@ export function LeadDetailsPage() {
     )
   }
 
-  const lead = leadQuery.data
-  if (!lead) return null
+  const maybeLead = leadQuery.data
+  if (!maybeLead) return null
+  const lead = maybeLead
 
   const activityCount = activitiesQuery.data?.length
   const fileCount = attachmentsQuery.data?.length

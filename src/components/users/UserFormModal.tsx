@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, type ReactNode } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { userFormSchema, type UserFormValues } from '@/schemas/user'
 import type { CrmUser } from '@/types/crmUser'
 
@@ -37,7 +37,7 @@ export function UserFormModal({
     reset,
     formState: { errors },
   } = useForm<UserFormValues>({
-    resolver: zodResolver(userFormSchema),
+    resolver: zodResolver(userFormSchema) as Resolver<UserFormValues>,
     defaultValues,
     mode: 'onBlur',
   })
@@ -128,6 +128,7 @@ export function UserFormModal({
                 <option value="sales_agent">Sales Agent</option>
                 <option value="manager">Manager</option>
                 <option value="admin">Admin</option>
+                <option value="support">Support Agent</option>
               </select>
             </Field>
             <Field label="Status" error={errors.status?.message}>

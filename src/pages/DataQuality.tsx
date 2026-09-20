@@ -6,7 +6,6 @@ import { useCustomers } from '@/hooks/useCustomers'
 import { useLeads } from '@/hooks/useLeads'
 import { useDeals } from '@/hooks/useDeals'
 import { useTickets } from '@/hooks/useTickets'
-import { formatCurrency } from '@/lib/format'
 
 interface QualityIssue {
   id: string

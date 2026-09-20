@@ -19,7 +19,6 @@ import {
   Shield,
   Sparkles,
   Tag,
-  Target,
   Upload,
   UserCheck,
   UserPlus,

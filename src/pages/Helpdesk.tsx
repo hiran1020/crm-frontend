@@ -148,7 +148,7 @@ export function HelpdeskPage() {
           { label: 'Closed',      count: stats.closed,      ...STATUS_COUNTS_ICON['Closed'] },
         ] as const).map(({ label, count, icon: Icon, color, bg }) => (
           <button key={label} type="button"
-            onClick={() => { setStatus(label === 'All' ? 'All' : label as TicketStatus); setPage(1) }}
+            onClick={() => { setStatus(label as TicketStatus); setPage(1) }}
             className="rounded-lg border border-border bg-white p-4 text-left shadow-sm hover:border-brand-300 hover:shadow-md transition-all">
             <div className={['mb-2 inline-flex h-8 w-8 items-center justify-center rounded-lg', bg].join(' ')}>
               <Icon className={['h-4 w-4', color].join(' ')} aria-hidden />

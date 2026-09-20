@@ -280,7 +280,7 @@ export function AnalyticsPage() {
                     cx="50%"
                     cy="50%"
                     outerRadius={70}
-                    label={({ type, percent }) => `${type} ${Math.round((percent ?? 0) * 100)}%`}
+                    label={({ name, percent }) => `${name} ${Math.round((percent ?? 0) * 100)}%`}
                     labelLine={false}
                   >
                     {actByType.map((_, i) => (

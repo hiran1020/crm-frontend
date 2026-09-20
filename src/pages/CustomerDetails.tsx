@@ -28,7 +28,6 @@ import { CustomerDealsList } from '@/components/customers/CustomerDealsList'
 import { CustomerFormModal } from '@/components/customers/CustomerFormModal'
 import { CustomerInfoCard } from '@/components/customers/CustomerInfoCard'
 import { StatusBadge } from '@/components/customers/StatusBadge'
-import { MOCK_OWNERS } from '@/constants/auth'
 import { useCreateActivity, useCustomerActivities } from '@/hooks/useActivities'
 import {
   useAttachments,
@@ -37,7 +36,6 @@ import {
 } from '@/hooks/useAttachments'
 import {
   useCustomer,
-  useCustomerOwners,
   useDeleteCustomer,
   useUpdateCustomer,
 } from '@/hooks/useCustomers'
@@ -92,7 +90,6 @@ export function CustomerDetailsPage() {
     'call' | 'email' | 'meeting' | 'note' | 'task'
   >('call')
 
-  const ownersQuery = useCustomerOwners()
   const updateCustomer = useUpdateCustomer()
   const deleteCustomer = useDeleteCustomer()
   const createActivity = useCreateActivity()
@@ -140,10 +137,9 @@ export function CustomerDetailsPage() {
     )
   }
 
-  const customer = customerQuery.data
-  if (!customer) return null
-
-  const _owners = ownersQuery.data ?? [...MOCK_OWNERS]
+  const maybeCustomer = customerQuery.data
+  if (!maybeCustomer) return null
+  const customer = maybeCustomer
   const dealCount = dealsQuery.data?.length
   const activityCount = activitiesQuery.data?.length
   const fileCount = attachmentsQuery.data?.length

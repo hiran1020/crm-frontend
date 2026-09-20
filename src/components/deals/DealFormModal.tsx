@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, type ReactNode } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { MOCK_OWNERS } from '@/constants/auth'
 import { useCustomers } from '@/hooks/useCustomers'
 import { dealFormSchema, type DealFormValues } from '@/schemas/deal'
@@ -47,7 +47,7 @@ export function DealFormModal({
     control,
     formState: { errors },
   } = useForm<DealFormValues>({
-    resolver: zodResolver(dealFormSchema),
+    resolver: zodResolver(dealFormSchema) as Resolver<DealFormValues>,
     defaultValues,
     mode: 'onBlur',
   })

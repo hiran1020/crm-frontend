@@ -88,8 +88,9 @@ export function TicketDetailsPage() {
       onRetry={() => void ticketQuery.refetch()} />
   }
 
-  const ticket = ticketQuery.data
-  if (!ticket) return null
+  const maybeTicket = ticketQuery.data
+  if (!maybeTicket) return null
+  const ticket = maybeTicket
 
   // Days open
   const daysOpen = Math.floor(
