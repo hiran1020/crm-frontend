@@ -249,6 +249,7 @@ export function LeadsPage() {
   async function handleImportCsv(
     rows: Record<string, string>[],
     mapping: Record<string, string>,
+    onProgress: (done: number, total: number) => void,
   ): Promise<{ imported: number; skipped: number; errors: string[] }> {
     let imported = 0
     let skipped = 0
@@ -257,7 +258,9 @@ export function LeadsPage() {
     const VALID_SOURCES = ['Website', 'Referral', 'Trade Show', 'Cold Call', 'Email Campaign', 'Social Media', 'Partner']
     const VALID_STATUSES = ['New', 'Contacted', 'Qualified', 'Lost', 'Converted']
 
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+      onProgress(i, rows.length)
+      const row = rows[i]
       try {
         const mapped: Partial<LeadInput> = {}
         for (const [csvCol, crmField] of Object.entries(mapping)) {
@@ -274,10 +277,10 @@ export function LeadsPage() {
           else if (crmField === 'notes') mapped.notes = val
         }
 
-        if (!mapped.email) { skipped++; continue }
+        if (!mapped.email) { skipped++; onProgress(i + 1, rows.length); continue }
 
         const existing = await leadService.findByEmail(mapped.email)
-        if (existing) { skipped++; continue }
+        if (existing) { skipped++; onProgress(i + 1, rows.length); continue }
 
         const ownerName = mapped.owner ?? ''
         const matchedUser = users.find((u) => u.name === ownerName)
@@ -298,6 +301,7 @@ export function LeadsPage() {
       } catch (err) {
         errors.push(err instanceof Error ? err.message : 'Unknown error')
       }
+      onProgress(i + 1, rows.length)
     }
 
     if (imported > 0) {

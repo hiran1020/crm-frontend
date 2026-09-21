@@ -108,13 +108,23 @@ async function fetchUserMap(): Promise<Map<string, { name: string; role: string 
   }
 }
 
+export interface AuditLogResult {
+  data: AuditLogEntry[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 export const auditService = {
-  async getAuditLog(params: AuditLogParams = {}): Promise<AuditLogEntry[]> {
+  async getAuditLog(params: AuditLogParams = {}): Promise<AuditLogResult> {
     const qs = new URLSearchParams()
     if (params.entity && params.entity !== 'all') qs.set('entityType', params.entity)
     if (params.action && params.action !== 'all') qs.set('action', toBackendAction(params.action))
-    qs.set('pageSize', String(params.pageSize ?? 50))
-    qs.set('page', String(params.page ?? 1))
+    const pageSize = params.pageSize ?? 20
+    const page = params.page ?? 1
+    qs.set('pageSize', String(pageSize))
+    qs.set('page', String(page))
 
     const [res, userMap] = await Promise.all([
       api.get<ApiListResult>(`/audit-log?${qs}`),
@@ -136,7 +146,13 @@ export const auditService = {
       entries = entries.filter((e) => e.createdAt <= params.to! + 'T23:59:59Z')
     }
 
-    return entries
+    return {
+      data: entries,
+      total: res.total,
+      page: res.page,
+      pageSize: res.pageSize,
+      totalPages: res.totalPages,
+    }
   },
 
   async getEntityAuditLog(entity: AuditEntity, entityId: string): Promise<AuditLogEntry[]> {

@@ -235,12 +235,15 @@ export function CustomersPage() {
   async function handleImportCsv(
     rows: Record<string, string>[],
     mapping: Record<string, string>,
+    onProgress: (done: number, total: number) => void,
   ): Promise<{ imported: number; skipped: number; errors: string[] }> {
     let imported = 0
     let skipped = 0
     const errors: string[] = []
 
-    for (const row of rows) {
+    for (let i = 0; i < rows.length; i++) {
+      onProgress(i, rows.length)
+      const row = rows[i]
       try {
         const mapped: Partial<CustomerInput> = {}
         for (const [csvCol, crmField] of Object.entries(mapping)) {
@@ -256,10 +259,10 @@ export function CustomersPage() {
           else if (crmField === 'owner') mapped.owner = val || ''
         }
 
-        if (!mapped.email) { skipped++; continue }
+        if (!mapped.email) { skipped++; onProgress(i + 1, rows.length); continue }
 
         const existing = await customerService.findByEmail(mapped.email)
-        if (existing) { skipped++; continue }
+        if (existing) { skipped++; onProgress(i + 1, rows.length); continue }
 
         const ownerName = mapped.owner ?? ''
         const matchedUser = users.find((u) => u.name === ownerName)
@@ -278,6 +281,7 @@ export function CustomersPage() {
       } catch (err) {
         errors.push(err instanceof Error ? err.message : 'Unknown error')
       }
+      onProgress(i + 1, rows.length)
     }
 
     if (imported > 0) {
