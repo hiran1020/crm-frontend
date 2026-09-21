@@ -2,9 +2,9 @@ import { Clock, Search, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { customerStore } from '@/mock/customerStore'
-import { dealStore } from '@/mock/dealStore'
-import { leadStore } from '@/mock/leadStore'
+import { customerService } from '@/services/customerService'
+import { dealService } from '@/services/dealService'
+import { leadService } from '@/services/leadService'
 import { getRecentlyViewed } from '@/lib/recentlyViewed'
 
 interface SearchResult {
@@ -15,59 +15,57 @@ interface SearchResult {
   group: 'Customers' | 'Leads' | 'Deals'
 }
 
-function searchAll(query: string): SearchResult[] {
-  if (query.trim().length < 2) return []
-
-  const q = query.toLowerCase()
-
-  const customers = customerStore
-    .list({ search: q, pageSize: 4 })
-    .data.map(
-      (c): SearchResult => ({
-        id: c.id,
-        label: `${c.firstName} ${c.lastName}`,
-        sub: c.company,
-        href: `/customers/${c.id}`,
-        group: 'Customers',
-      }),
-    )
-
-  const leads = leadStore
-    .list({ search: q, pageSize: 4 })
-    .data.map(
-      (l): SearchResult => ({
-        id: l.id,
-        label: l.name,
-        sub: l.company,
-        href: `/leads/${l.id}`,
-        group: 'Leads',
-      }),
-    )
-
-  const deals = dealStore
-    .list({ search: q, pageSize: 4 })
-    .data.map(
-      (d): SearchResult => ({
-        id: d.id,
-        label: d.title,
-        sub: d.stage,
-        href: `/deals/${d.id}`,
-        group: 'Deals',
-      }),
-    )
-
-  return [...customers, ...leads, ...deals]
-}
-
 export function GlobalSearch() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
-  const debouncedQuery = useDebouncedValue(query, 250)
+  const [results, setResults] = useState<SearchResult[]>([])
+  const debouncedQuery = useDebouncedValue(query, 300)
   const inputRef = useRef<HTMLInputElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const results = searchAll(debouncedQuery)
+  useEffect(() => {
+    if (debouncedQuery.trim().length < 2) {
+      setResults([])
+      return
+    }
+
+    let cancelled = false
+    Promise.all([
+      customerService.getCustomers({ search: debouncedQuery, pageSize: 4 }),
+      leadService.getLeads({ search: debouncedQuery, pageSize: 4 }),
+      dealService.getDeals({ search: debouncedQuery, pageSize: 4 }),
+    ]).then(([customers, leads, deals]) => {
+      if (cancelled) return
+      setResults([
+        ...customers.data.map((c) => ({
+          id: c.id,
+          label: `${c.firstName} ${c.lastName}`,
+          sub: c.company,
+          href: `/customers/${c.id}`,
+          group: 'Customers' as const,
+        })),
+        ...leads.data.map((l) => ({
+          id: l.id,
+          label: l.name,
+          sub: l.company,
+          href: `/leads/${l.id}`,
+          group: 'Leads' as const,
+        })),
+        ...deals.data.map((d) => ({
+          id: d.id,
+          label: d.title,
+          sub: d.stage,
+          href: `/deals/${d.id}`,
+          group: 'Deals' as const,
+        })),
+      ])
+    }).catch(() => {
+      if (!cancelled) setResults([])
+    })
+
+    return () => { cancelled = true }
+  }, [debouncedQuery])
 
   const grouped = results.reduce<Record<string, SearchResult[]>>((acc, r) => {
     if (!acc[r.group]) acc[r.group] = []
@@ -122,7 +120,6 @@ export function GlobalSearch() {
 
   return (
     <div ref={containerRef} className="relative hidden sm:block">
-      {/* Mobile: full-screen search overlay triggered by the mobile search button in Header */}
       {/* Input */}
       <div className="relative">
         <Search
@@ -158,7 +155,6 @@ export function GlobalSearch() {
 
       {/* Dropdown */}
       {open && debouncedQuery.trim().length === 0 ? (
-        /* Recently viewed — show when search is open but empty */
         (() => {
           const recent = getRecentlyViewed()
           if (recent.length === 0) return null
@@ -234,4 +230,3 @@ export function GlobalSearch() {
     </div>
   )
 }
-

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import { MOCK_OWNERS } from '@/constants/auth'
 
 export const leadFormSchema = z.object({
   name: z.string().trim().min(1, 'Name is required'),
@@ -18,7 +17,8 @@ export const leadFormSchema = z.object({
   value: z
     .number({ error: 'Value must be a number' })
     .positive('Value must be greater than 0'),
-  owner: z.enum(MOCK_OWNERS, { message: 'Select an owner' }),
+  owner: z.string().min(1, 'Select an owner'),
+  ownerId: z.string().min(1, 'Select an owner'),
   status: z.enum(['New', 'Contacted', 'Qualified', 'Lost', 'Converted']),
   notes: z.string().trim().optional().default(''),
 })

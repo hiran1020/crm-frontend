@@ -6,8 +6,8 @@ import { useToast } from '@/components/common/ToastProvider'
 import { SavedViewsDropdown } from '@/components/common/SavedViewsDropdown'
 import { DealFormModal } from '@/components/deals/DealFormModal'
 import { KanbanBoard } from '@/components/deals/KanbanBoard'
-import { MOCK_OWNERS } from '@/constants/auth'
 import { useCustomers } from '@/hooks/useCustomers'
+import { useUsers } from '@/hooks/useUsers'
 import {
   useCreateDeal,
   useDeals,
@@ -31,6 +31,7 @@ export function DealsPage() {
 
   const dealsQuery = useDeals({ pageSize: 200 })
   const customersQuery = useCustomers({ pageSize: 200 })
+  const { data: users = [] } = useUsers()
   const createDeal = useCreateDeal()
   const updateDeal = useUpdateDeal()
   const deleteDeal = useDeleteDeal()
@@ -165,9 +166,9 @@ export function DealsPage() {
           className="h-9 rounded-md border border-border bg-white px-3 text-sm outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-100"
         >
           <option value="All">All owners</option>
-          {[...MOCK_OWNERS].map((o) => (
-            <option key={o} value={o}>
-              {o}
+          {users.map((u) => (
+            <option key={u.id} value={u.name}>
+              {u.name}
             </option>
           ))}
         </select>

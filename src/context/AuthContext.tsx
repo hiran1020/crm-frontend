@@ -7,9 +7,13 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { User } from '@/types/user'
-
-const STORAGE_KEY = 'crm_auth'
+import {
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+} from 'firebase/auth'
+import { firebaseAuth } from '@/lib/firebase'
+import type { User, UserRole } from '@/types/user'
 
 interface AuthContextValue {
   user: User | null
@@ -17,125 +21,73 @@ interface AuthContextValue {
   logout: () => void
 }
 
-const mockUsers: Array<{ email: string; password: string; user: User }> = [
-  {
-    email: 'sarah@crm.com',
-    password: 'password',
-    user: {
-      id: 'USR-001',
-      name: 'Sarah Wilson',
-      email: 'sarah@crm.com',
-      role: 'manager',
-      avatarInitials: 'SW',
-    },
-  },
-  {
-    email: 'david@crm.com',
-    password: 'password',
-    user: {
-      id: 'USR-002',
-      name: 'David Chen',
-      email: 'david@crm.com',
-      role: 'sales_agent',
-      avatarInitials: 'DC',
-    },
-  },
-  {
-    email: 'emily@crm.com',
-    password: 'password',
-    user: {
-      id: 'USR-003',
-      name: 'Emily Rodriguez',
-      email: 'emily@crm.com',
-      role: 'sales_agent',
-      avatarInitials: 'ER',
-    },
-  },
-  {
-    email: 'admin@crm.com',
-    password: 'password',
-    user: {
-      id: 'USR-004',
-      name: 'Admin User',
-      email: 'admin@crm.com',
-      role: 'admin',
-      avatarInitials: 'AU',
-    },
-  },
-  {
-    email: 'alex@crm.com',
-    password: 'password',
-    user: {
-      id: 'USR-005',
-      name: 'Alex Thompson',
-      email: 'alex@crm.com',
-      role: 'support',
-      avatarInitials: 'AT',
-    },
-  },
-]
-
-function loadUser(): User | null {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (!stored) return null
-    return JSON.parse(stored) as User
-  } catch {
-    return null
-  }
-}
-
-function saveUser(user: User): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-}
-
-function clearUser(): void {
-  localStorage.removeItem(STORAGE_KEY)
-}
-
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(loadUser)
+function makeInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
 
-  // Sync state if storage changes in another tab
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-    function handleStorage(event: StorageEvent) {
-      if (event.key === STORAGE_KEY) {
-        setUser(loadUser())
+    const unsub = onAuthStateChanged(firebaseAuth, async (fbUser) => {
+      if (!fbUser) {
+        setUser(null)
+        setLoading(false)
+        return
       }
-    }
-    window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+      const tokenResult = await fbUser.getIdTokenResult()
+      const role = (tokenResult.claims['role'] as UserRole | undefined) ?? 'sales_agent'
+      const name = fbUser.displayName ?? fbUser.email ?? ''
+      setUser({
+        id: fbUser.uid,
+        name,
+        email: fbUser.email ?? '',
+        role,
+        avatarInitials: makeInitials(name),
+      })
+      setLoading(false)
+    })
+    return unsub
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
-    // Simulate network delay
-    await new Promise<void>((resolve) => setTimeout(resolve, 600))
-
-    const match = mockUsers.find(
-      (entry) =>
-        entry.email.toLowerCase() === email.toLowerCase() &&
-        entry.password === password,
-    )
-
-    if (!match) {
-      throw new Error('Invalid email or password')
-    }
-
-    saveUser(match.user)
-    setUser(match.user)
+    const cred = await signInWithEmailAndPassword(firebaseAuth, email, password)
+    const tokenResult = await cred.user.getIdTokenResult(true)
+    const role = (tokenResult.claims['role'] as UserRole | undefined) ?? 'sales_agent'
+    const name = cred.user.displayName ?? cred.user.email ?? ''
+    setUser({
+      id: cred.user.uid,
+      name,
+      email: cred.user.email ?? '',
+      role,
+      avatarInitials: makeInitials(name),
+    })
   }, [])
 
-  const logout = useCallback(() => {
-    clearUser()
+  const logout = useCallback(async () => {
+    await firebaseSignOut(firebaseAuth)
     setUser(null)
   }, [])
 
-  const value = useMemo(
-    () => ({ user, login, logout }),
-    [user, login, logout],
-  )
+  const value = useMemo(() => ({ user, login, logout }), [user, login, logout])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-neutral-50 dark:bg-neutral-900">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+      </div>
+    )
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

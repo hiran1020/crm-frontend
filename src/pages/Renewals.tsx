@@ -5,8 +5,9 @@ import { useToast } from '@/components/common/ToastProvider'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { useRenewals, useCreateRenewal, useUpdateRenewal, useDeleteRenewal } from '@/hooks/useRenewals'
+import { useUsers } from '@/hooks/useUsers'
+import { useAuth } from '@/context/AuthContext'
 import { formatCurrency, formatDate } from '@/lib/format'
-import { MOCK_OWNERS } from '@/constants/auth'
 import type { Renewal, RenewalStatus } from '@/types/renewal'
 
 const STATUS_COLORS: Record<RenewalStatus, string> = {
@@ -48,17 +49,20 @@ interface RenewalFormModalProps {
 
 function RenewalFormModal({ open, renewal, busy = false, onClose, onSubmit }: RenewalFormModalProps) {
   const isEdit = Boolean(renewal)
+  const { data: users = [] } = useUsers()
+  const { user: authUser } = useAuth()
   const [customerId, setCustomerId] = useState(renewal?.customerId ?? '')
   const [customerName, setCustomerName] = useState(renewal?.customerName ?? '')
   const [contractValue, setContractValue] = useState(renewal?.contractValue ?? 0)
   const [renewalDate, setRenewalDate] = useState(renewal?.renewalDate ?? '')
   const [status, setStatus] = useState<RenewalStatus>(renewal?.status ?? 'upcoming')
-  const [owner, setOwner] = useState(renewal?.owner ?? MOCK_OWNERS[0])
+  const [owner, setOwner] = useState(renewal?.owner ?? '')
   const [probability, setProbability] = useState(renewal?.probability ?? 80)
   const [notes, setNotes] = useState(renewal?.notes ?? '')
 
   useEffect(() => {
     if (!open) return
+    const defaultUser = users.find((u) => u.id === authUser?.id) ?? users[0]
     if (renewal) {
       setCustomerId(renewal.customerId)
       setCustomerName(renewal.customerName)
@@ -74,11 +78,11 @@ function RenewalFormModal({ open, renewal, busy = false, onClose, onSubmit }: Re
       setContractValue(0)
       setRenewalDate('')
       setStatus('upcoming')
-      setOwner(MOCK_OWNERS[0])
+      setOwner(defaultUser?.name ?? '')
       setProbability(80)
       setNotes('')
     }
-  }, [open, renewal])
+  }, [open, renewal, users, authUser])
 
   useEffect(() => {
     if (!open) return
@@ -156,7 +160,7 @@ function RenewalFormModal({ open, renewal, busy = false, onClose, onSubmit }: Re
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Owner</label>
               <select value={owner} onChange={(e) => setOwner(e.target.value)} className={inputCls}>
-                {MOCK_OWNERS.map((o) => <option key={o} value={o}>{o}</option>)}
+                {users.map((u) => <option key={u.id} value={u.name}>{u.name}</option>)}
               </select>
             </div>
           </div>

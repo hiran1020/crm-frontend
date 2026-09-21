@@ -30,7 +30,7 @@ export function useLead(id: string) {
 export function useLeadOwners() {
   return useQuery({
     queryKey: leadKeys.owners(),
-    queryFn: leadService.getOwners,
+    queryFn: () => leadService.getOwners(),
   })
 }
 

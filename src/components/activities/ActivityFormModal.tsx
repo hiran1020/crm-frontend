@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
-import { MOCK_OWNERS } from '@/constants/auth'
+import { useUsers } from '@/hooks/useUsers'
+import { useAuth } from '@/context/AuthContext'
 import {
   activityFormSchema,
   type ActivityFormValues,
@@ -32,16 +33,6 @@ const TYPE_LABELS: Record<ActivityType, string> = {
   task: 'Task',
 }
 
-const defaultValues: ActivityFormValues = {
-  type: 'call',
-  title: '',
-  description: '',
-  owner: MOCK_OWNERS[0],
-  completed: false,
-  dueDate: '',
-  priority: 'medium',
-}
-
 export function ActivityFormModal({
   open,
   defaultType,
@@ -50,6 +41,9 @@ export function ActivityFormModal({
   onClose,
   onSubmit,
 }: ActivityFormModalProps) {
+  const { data: users = [] } = useUsers()
+  const { user: authUser } = useAuth()
+
   const {
     register,
     handleSubmit,
@@ -58,7 +52,15 @@ export function ActivityFormModal({
     formState: { errors },
   } = useForm<ActivityFormValues>({
     resolver: zodResolver(activityFormSchema),
-    defaultValues,
+    defaultValues: {
+      type: 'call',
+      title: '',
+      description: '',
+      owner: '',
+      completed: false,
+      dueDate: '',
+      priority: 'medium',
+    },
     mode: 'onBlur',
   })
 
@@ -66,11 +68,17 @@ export function ActivityFormModal({
 
   useEffect(() => {
     if (!open) return
+    const defaultUser = users.find((u) => u.id === authUser?.id) ?? users[0]
     reset({
-      ...defaultValues,
       type: defaultType ?? 'call',
+      title: '',
+      description: '',
+      owner: defaultUser?.name ?? '',
+      completed: false,
+      dueDate: '',
+      priority: 'medium',
     })
-  }, [open, defaultType, reset])
+  }, [open, defaultType, reset, users, authUser])
 
   if (!open) return null
 
@@ -197,9 +205,10 @@ export function ActivityFormModal({
             {/* Owner */}
             <Field label="Owner" error={errors.owner?.message}>
               <select {...register('owner')} className={inputClass(errors.owner)}>
-                {MOCK_OWNERS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
+                <option value="">Select owner…</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.name}>
+                    {u.name}
                   </option>
                 ))}
               </select>

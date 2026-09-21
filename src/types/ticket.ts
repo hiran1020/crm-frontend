@@ -26,6 +26,7 @@ export interface Ticket {
   customerId?: string
   customerName?: string
   assignedTo: string
+  assigneeId?: string
   createdBy: string
   createdAt: string
   updatedAt: string

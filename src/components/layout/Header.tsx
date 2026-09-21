@@ -6,35 +6,37 @@ import { NotificationsDropdown } from '@/components/layout/NotificationsDropdown
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { useAuth } from '@/context/AuthContext'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
-import { customerStore } from '@/mock/customerStore'
-import { leadStore } from '@/mock/leadStore'
-import { dealStore } from '@/mock/dealStore'
+import { customerService } from '@/services/customerService'
+import { leadService } from '@/services/leadService'
+import { dealService } from '@/services/dealService'
 
 interface SearchResult { id: string; label: string; sub: string; href: string }
-
-function searchAll(q: string): SearchResult[] {
-  if (q.trim().length < 2) return []
-  const ql = q.toLowerCase()
-  return [
-    ...customerStore.list({ search: ql, pageSize: 3 }).data.map(c => ({
-      id: c.id, label: `${c.firstName} ${c.lastName}`, sub: c.company, href: `/customers/${c.id}`,
-    })),
-    ...leadStore.list({ search: ql, pageSize: 3 }).data.map(l => ({
-      id: l.id, label: l.name, sub: l.company, href: `/leads/${l.id}`,
-    })),
-    ...dealStore.list({ search: ql, pageSize: 3 }).data.map(d => ({
-      id: d.id, label: d.title, sub: d.stage, href: `/deals/${d.id}`,
-    })),
-  ]
-}
 
 /** Full-screen search overlay shown on mobile when the search icon is tapped */
 function MobileSearchOverlay({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const debounced = useDebouncedValue(query, 250)
-  const results = searchAll(debounced)
+  const [results, setResults] = useState<SearchResult[]>([])
+  const debounced = useDebouncedValue(query, 300)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (debounced.trim().length < 2) { setResults([]); return }
+    let cancelled = false
+    Promise.all([
+      customerService.getCustomers({ search: debounced, pageSize: 3 }),
+      leadService.getLeads({ search: debounced, pageSize: 3 }),
+      dealService.getDeals({ search: debounced, pageSize: 3 }),
+    ]).then(([customers, leads, deals]) => {
+      if (cancelled) return
+      setResults([
+        ...customers.data.map(c => ({ id: c.id, label: `${c.firstName} ${c.lastName}`, sub: c.company, href: `/customers/${c.id}` })),
+        ...leads.data.map(l => ({ id: l.id, label: l.name, sub: l.company, href: `/leads/${l.id}` })),
+        ...deals.data.map(d => ({ id: d.id, label: d.title, sub: d.stage, href: `/deals/${d.id}` })),
+      ])
+    }).catch(() => { if (!cancelled) setResults([]) })
+    return () => { cancelled = true }
+  }, [debounced])
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 50)

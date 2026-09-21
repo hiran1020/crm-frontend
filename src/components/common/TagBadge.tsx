@@ -1,7 +1,7 @@
 import { X } from 'lucide-react'
 import type { Tag } from '@/types/tag'
 
-const COLOR_CLASSES: Record<Tag['color'], string> = {
+const NAMED_COLORS: Record<string, string> = {
   blue: 'bg-blue-100 text-blue-700',
   green: 'bg-green-100 text-green-700',
   purple: 'bg-purple-100 text-purple-700',
@@ -18,12 +18,13 @@ interface TagBadgeProps {
 }
 
 export function TagBadge({ tag, onRemove }: TagBadgeProps) {
+  const isHex = /^#[0-9a-fA-F]{6}$/.test(tag.color ?? '')
+  const namedClass = NAMED_COLORS[tag.color] ?? NAMED_COLORS.slate
+
   return (
     <span
-      className={[
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-        COLOR_CLASSES[tag.color],
-      ].join(' ')}
+      className={['inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium', !isHex ? namedClass : ''].join(' ')}
+      style={isHex ? { backgroundColor: `${tag.color}22`, color: tag.color } : undefined}
     >
       {tag.name}
       {onRemove ? (

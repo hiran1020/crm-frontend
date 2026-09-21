@@ -15,7 +15,6 @@ import {
   CustomerTable,
   CustomerTableSkeleton,
 } from '@/components/customers/CustomerTable'
-import { MOCK_OWNERS } from '@/constants/auth'
 import { downloadCsv } from '@/lib/csv'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
@@ -80,7 +79,7 @@ export function CustomersPage() {
   const deleteCustomer = useDeleteCustomer()
   const bulkDelete = useBulkDeleteCustomers()
 
-  const owners = ownersQuery.data ?? [...MOCK_OWNERS]
+  const owners = ownersQuery.data ?? []
   const result = customersQuery.data
   const customers = result?.data ?? []
   const isInitialLoading = customersQuery.isLoading && !customersQuery.data
@@ -252,7 +251,7 @@ export function CustomersPage() {
           else if (crmField === 'company') mapped.company = val
           else if (crmField === 'jobTitle') mapped.jobTitle = val
           else if (crmField === 'status') mapped.status = (val === 'Inactive' ? 'Inactive' : 'Active')
-          else if (crmField === 'owner') mapped.owner = val || MOCK_OWNERS[0]
+          else if (crmField === 'owner') mapped.owner = val || ''
         }
 
         if (!mapped.email) { skipped++; continue }
@@ -268,7 +267,7 @@ export function CustomersPage() {
           company: mapped.company ?? '',
           jobTitle: mapped.jobTitle ?? '',
           status: mapped.status ?? 'Active',
-          owner: mapped.owner ?? MOCK_OWNERS[0],
+          owner: mapped.owner ?? '',
         })
         imported++
       } catch (err) {

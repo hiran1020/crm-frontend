@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
-import { MOCK_OWNERS } from '@/constants/auth'
+import { useUsers } from '@/hooks/useUsers'
 import { useAuth } from '@/context/AuthContext'
 import { ticketFormSchema, type TicketFormValues } from '@/schemas/ticket'
 import type { Ticket } from '@/types/ticket'
@@ -12,12 +12,6 @@ interface TicketFormModalProps {
   busy?: boolean
   onClose: () => void
   onSubmit: (values: TicketFormValues) => Promise<void> | void
-}
-
-const defaults: TicketFormValues = {
-  title: '', description: '', status: 'Open', priority: 'Medium',
-  category: 'General Inquiry', assignedTo: MOCK_OWNERS[0],
-  customerId: '', customerName: '', createdBy: '',
 }
 
 function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
@@ -40,27 +34,44 @@ function cls(error?: { message?: string }) {
 
 export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit }: TicketFormModalProps) {
   const { user } = useAuth()
+  const { data: users = [] } = useUsers()
   const isEdit = Boolean(ticket)
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<TicketFormValues>({
+
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
-    defaultValues: defaults,
+    defaultValues: {
+      title: '', description: '', status: 'Open', priority: 'Medium',
+      category: 'General Inquiry', assignedTo: '', assigneeId: '',
+      customerId: '', customerName: '', createdBy: '',
+    },
     mode: 'onBlur',
   })
 
   useEffect(() => {
     if (!open) return
     if (ticket) {
+      const matchedUser = users.find((u) => u.name === ticket.assignedTo)
       reset({
         title: ticket.title, description: ticket.description,
         status: ticket.status, priority: ticket.priority,
-        category: ticket.category, assignedTo: ticket.assignedTo as (typeof MOCK_OWNERS)[number],
+        category: ticket.category,
+        assignedTo: ticket.assignedTo,
+        assigneeId: matchedUser?.id ?? '',
         customerId: ticket.customerId ?? '', customerName: ticket.customerName ?? '',
         createdBy: ticket.createdBy,
       })
     } else {
-      reset({ ...defaults, createdBy: user?.name ?? '', assignedTo: user?.name as (typeof MOCK_OWNERS)[number] ?? MOCK_OWNERS[0] })
+      const defaultUser = users.find((u) => u.id === user?.id) ?? users[0]
+      reset({
+        title: '', description: '', status: 'Open', priority: 'Medium',
+        category: 'General Inquiry',
+        assignedTo: defaultUser?.name ?? '',
+        assigneeId: defaultUser?.id ?? '',
+        customerId: '', customerName: '',
+        createdBy: user?.name ?? '',
+      })
     }
-  }, [open, ticket, reset, user])
+  }, [open, ticket, reset, users, user])
 
   if (!open) return null
 
@@ -123,8 +134,17 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
               </select>
             </Field>
             <Field label="Assigned to" error={errors.assignedTo?.message}>
-              <select {...register('assignedTo')} className={cls(errors.assignedTo)}>
-                {MOCK_OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+              <select
+                className={cls(errors.assignedTo)}
+                {...register('assigneeId')}
+                onChange={(e) => {
+                  const selected = users.find((u) => u.id === e.target.value)
+                  setValue('assigneeId', e.target.value)
+                  setValue('assignedTo', selected?.name ?? e.target.value, { shouldValidate: true })
+                }}
+              >
+                <option value="">Select assignee…</option>
+                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
               </select>
             </Field>
           </div>

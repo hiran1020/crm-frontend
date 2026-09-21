@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
-import { MOCK_OWNERS } from '@/constants/auth'
 import {
   customerFormSchema,
   type CustomerFormValues,
 } from '@/schemas/customer'
 import { useCustomFields } from '@/hooks/useCustomFields'
+import { useUsers } from '@/hooks/useUsers'
+import { useAuth } from '@/context/AuthContext'
 import type { Customer } from '@/types/customer'
 
 interface CustomerFormModalProps {
@@ -15,17 +16,6 @@ interface CustomerFormModalProps {
   busy?: boolean
   onClose: () => void
   onSubmit: (values: CustomerFormValues) => Promise<void> | void
-}
-
-const defaultValues: CustomerFormValues = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-  company: '',
-  jobTitle: '',
-  status: 'Active',
-  owner: MOCK_OWNERS[0],
 }
 
 export function CustomerFormModal({
@@ -38,22 +28,33 @@ export function CustomerFormModal({
   const isEdit = Boolean(customer)
   const { data: customFields = [] } = useCustomFields('customer')
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, unknown>>({})
+  const { data: users = [] } = useUsers()
+  const { user: authUser } = useAuth()
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CustomerFormValues>({
     resolver: zodResolver(customerFormSchema),
-    defaultValues,
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      company: '',
+      jobTitle: '',
+      status: 'Active',
+      owner: '',
+      ownerId: '',
+    },
     mode: 'onBlur',
   })
 
   useEffect(() => {
-    if (!open) {
-      return
-    }
+    if (!open) return
 
     if (customer) {
       reset({
@@ -64,14 +65,26 @@ export function CustomerFormModal({
         company: customer.company,
         jobTitle: customer.jobTitle,
         status: customer.status,
-        owner: customer.owner as (typeof MOCK_OWNERS)[number],
+        owner: customer.owner,
+        ownerId: customer.ownerId ?? customer.owner,
       })
       setCustomFieldValues(((customer as unknown as Record<string, unknown>).customFields as Record<string, unknown>) ?? {})
     } else {
-      reset(defaultValues)
+      const defaultUser = users.find((u) => u.id === authUser?.id) ?? users[0]
+      reset({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        company: '',
+        jobTitle: '',
+        status: 'Active',
+        owner: defaultUser?.name ?? '',
+        ownerId: defaultUser?.id ?? '',
+      })
       setCustomFieldValues({})
     }
-  }, [open, customer, reset])
+  }, [open, customer, reset, users, authUser])
 
   if (!open) {
     return null
@@ -173,11 +186,20 @@ export function CustomerFormModal({
                 <option value="Inactive">Inactive</option>
               </select>
             </Field>
-            <Field label="Owner" error={errors.owner?.message}>
-              <select {...register('owner')} className={inputClass(errors.owner)}>
-                {MOCK_OWNERS.map((owner) => (
-                  <option key={owner} value={owner}>
-                    {owner}
+            <Field label="Owner" error={errors.ownerId?.message ?? errors.owner?.message}>
+              <select
+                className={inputClass(errors.ownerId ?? errors.owner)}
+                {...register('ownerId')}
+                onChange={(e) => {
+                  const selected = users.find((u) => u.id === e.target.value)
+                  setValue('ownerId', e.target.value, { shouldValidate: true })
+                  setValue('owner', selected?.name ?? e.target.value)
+                }}
+              >
+                <option value="">Select owner…</option>
+                {users.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name}
                   </option>
                 ))}
               </select>

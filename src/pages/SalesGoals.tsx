@@ -5,8 +5,8 @@ import { useToast } from '@/components/common/ToastProvider'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { useGoals, useCreateGoal, useDeleteGoal } from '@/hooks/useGoals'
+import { useUsers } from '@/hooks/useUsers'
 import { formatCurrency } from '@/lib/format'
-import { MOCK_OWNERS } from '@/constants/auth'
 import type { SalesGoal, GoalMetric, GoalPeriod } from '@/types/salesGoal'
 
 const METRIC_LABELS: Record<GoalMetric, string> = {
@@ -51,7 +51,8 @@ function NewGoalModal({ open, onClose, onSubmit, busy }: NewGoalFormProps) {
   const [metric, setMetric] = useState<GoalMetric>('revenue')
   const [target, setTarget] = useState(0)
   const [period, setPeriod] = useState<GoalPeriod>('monthly')
-  const [owner, setOwner] = useState<string>('all')
+  const [owner, setOwner] = useState<string>('')
+  const { data: users = [] } = useUsers()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
   const quarter = Math.ceil(month / 3)
@@ -129,7 +130,7 @@ function NewGoalModal({ open, onClose, onSubmit, busy }: NewGoalFormProps) {
               <label className="block text-sm font-medium text-slate-700 mb-1">Owner</label>
               <select value={owner} onChange={(e) => setOwner(e.target.value)} className={inputCls}>
                 <option value="all">All Team</option>
-                {MOCK_OWNERS.map((o) => <option key={o} value={o}>{o}</option>)}
+                {users.map((u) => <option key={u.id} value={u.name}>{u.name}</option>)}
               </select>
             </div>
           </div>

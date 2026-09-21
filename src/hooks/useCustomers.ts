@@ -34,7 +34,7 @@ export function useCustomer(id: string) {
 export function useCustomerOwners() {
   return useQuery({
     queryKey: customerKeys.owners(),
-    queryFn: customerService.getOwners,
+    queryFn: () => customerService.getOwners(),
   })
 }
 

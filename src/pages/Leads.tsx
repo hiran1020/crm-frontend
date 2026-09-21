@@ -11,7 +11,6 @@ import { SavedViewsDropdown } from '@/components/common/SavedViewsDropdown'
 import { LeadFilters } from '@/components/leads/LeadFilters'
 import { LeadFormModal } from '@/components/leads/LeadFormModal'
 import { LeadTable, LeadTableSkeleton } from '@/components/leads/LeadTable'
-import { MOCK_OWNERS } from '@/constants/auth'
 import { downloadCsv } from '@/lib/csv'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
@@ -72,7 +71,7 @@ export function LeadsPage() {
   const deleteLead = useDeleteLead()
   const bulkDelete = useBulkDeleteLeads()
 
-  const owners = ownersQuery.data ?? [...MOCK_OWNERS]
+  const owners = ownersQuery.data ?? []
   const result = leadsQuery.data
   const leads = result?.data ?? []
   const isInitialLoading = leadsQuery.isLoading && !leadsQuery.data
@@ -268,7 +267,7 @@ export function LeadsPage() {
           else if (crmField === 'phone') mapped.phone = val
           else if (crmField === 'source') mapped.source = VALID_SOURCES.includes(val) ? val as LeadInput['source'] : 'Website'
           else if (crmField === 'value') mapped.value = parseFloat(val) || 0
-          else if (crmField === 'owner') mapped.owner = val || MOCK_OWNERS[0]
+          else if (crmField === 'owner') mapped.owner = val || ''
           else if (crmField === 'status') mapped.status = VALID_STATUSES.includes(val) ? val as LeadInput['status'] : 'New'
           else if (crmField === 'notes') mapped.notes = val
         }
@@ -286,7 +285,7 @@ export function LeadsPage() {
           source: mapped.source ?? 'Website',
           status: mapped.status ?? 'New',
           value: mapped.value ?? 0,
-          owner: mapped.owner ?? MOCK_OWNERS[0],
+          owner: mapped.owner ?? '',
           notes: mapped.notes ?? '',
           tags: [],
         })

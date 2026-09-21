@@ -1,12 +1,11 @@
 import { z } from 'zod'
-import { MOCK_OWNERS } from '@/constants/auth'
 
 export const activityFormSchema = z
   .object({
     type: z.enum(['call', 'email', 'meeting', 'note', 'task']),
     title: z.string().min(1, 'Title is required').max(200),
     description: z.string().optional(),
-    owner: z.enum(MOCK_OWNERS, { error: 'Select an owner' }),
+    owner: z.string().min(1, 'Select an owner'),
     completed: z.boolean(),
     dueDate: z.string().optional(),
     priority: z.enum(['low', 'medium', 'high']).optional(),

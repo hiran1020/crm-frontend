@@ -4,9 +4,12 @@ export interface Deal {
   id: string
   title: string
   customerId: string
+  customerName?: string
+  customerCompany?: string
   amount: number
   stage: DealStage
   owner: string
+  ownerId?: string
   expectedCloseDate: string
   description?: string
   probability?: number

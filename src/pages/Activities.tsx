@@ -7,8 +7,8 @@ import { ActivityList } from '@/components/activities/ActivityList'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { useToast } from '@/components/common/ToastProvider'
-import { MOCK_OWNERS } from '@/constants/auth'
 import { useActivities, useCreateActivity } from '@/hooks/useActivities'
+import { useUsers } from '@/hooks/useUsers'
 import type { ActivityFormValues } from '@/schemas/activity'
 import type { ActivityType } from '@/types/activity'
 
@@ -24,8 +24,9 @@ export function ActivitiesPage() {
 
   const activitiesQuery = useActivities()
   const createActivity = useCreateActivity()
+  const { data: users = [] } = useUsers()
 
-  const owners = [...MOCK_OWNERS]
+  const owners = users.map((u) => u.name)
 
   const filtered = useMemo(() => {
     const all = activitiesQuery.data ?? []

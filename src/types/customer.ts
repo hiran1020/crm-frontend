@@ -10,6 +10,7 @@ export interface Customer {
   jobTitle: string
   status: CustomerStatus
   owner: string
+  ownerId?: string
   createdAt: string
   avatar?: string
   tags?: string[]

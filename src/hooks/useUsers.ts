@@ -17,7 +17,7 @@ export const userKeys = {
 export function useUsers() {
   return useQuery({
     queryKey: userKeys.lists(),
-    queryFn: userService.getUsers,
+    queryFn: () => userService.getUsers(),
   })
 }
 

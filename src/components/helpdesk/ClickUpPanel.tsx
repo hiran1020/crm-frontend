@@ -173,10 +173,10 @@ export function ClickUpSettingsPanel() {
           FleetPanda Workspace (pre-configured)
         </p>
         <div className="space-y-1 text-xs text-slate-600">
-          <p><span className="font-medium">Workspace:</span> FleetPanda · ID <code className="bg-slate-200 px-1 rounded">8447923</code></p>
+          <p><span className="font-medium">Workspace:</span> CRM PURSE · ID <code className="bg-slate-200 px-1 rounded">8447923</code></p>
           <p>
             <span className="font-medium">Default list:</span>{' '}
-            <a href="https://app.clickup.com/8447923/v/l/li/900700247859" target="_blank" rel="noreferrer"
+            <a href="https://app.clickup.com/" target="_blank" rel="noreferrer"
               className="text-brand-600 hover:underline">
               Fixes and Improvements (Eng space)
             </a>

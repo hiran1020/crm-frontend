@@ -21,8 +21,8 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Pagination } from '@/components/common/Pagination'
 import { useToast } from '@/components/common/ToastProvider'
-import { MOCK_OWNERS } from '@/constants/auth'
 import { usePageTitle } from '@/hooks/usePageTitle'
+import { useUsers } from '@/hooks/useUsers'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
   useCreateTicket,
@@ -47,6 +47,7 @@ const STATUS_COUNTS_ICON = {
 export function HelpdeskPage() {
   usePageTitle('Help Desk')
   const { notify } = useToast()
+  const { data: users = [] } = useUsers()
 
   const [search, setSearch]   = useState('')
   const dSearch               = useDebouncedValue(search, 300)
@@ -189,7 +190,7 @@ export function HelpdeskPage() {
         <select value={assignedTo} onChange={e => { setAssignedTo(e.target.value); setPage(1) }}
           className="h-10 rounded-md border border-border bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
           <option value="All">All agents</option>
-          {MOCK_OWNERS.map(o => <option key={o} value={o}>{o}</option>)}
+          {users.map(u => <option key={u.id} value={u.name}>{u.name}</option>)}
         </select>
       </div>
 

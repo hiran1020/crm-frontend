@@ -18,6 +18,7 @@ export interface Lead {
   status: LeadStatus
   value: number
   owner: string
+  ownerId?: string
   notes: string
   createdAt: string
   convertedCustomerId?: string

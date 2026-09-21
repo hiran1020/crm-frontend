@@ -1,54 +1,108 @@
-import { delay } from '@/lib/delay'
-import { activityStore } from '@/mock/activityStore'
+import { api } from '@/lib/api'
 import type { Activity, ActivityInput } from '@/types/activity'
 
-/**
- * Activity service — UI and hooks call this, never the mock store directly.
- * Later: replace bodies with fetch('/api/activities...').
- */
+interface ApiActivity {
+  id: string
+  type?: string
+  title?: string
+  description?: string
+  relatedTo?: string
+  relatedType?: string
+  relatedName?: string
+  owner?: string
+  createdAt?: string
+  completed?: boolean
+  dueDate?: string
+  priority?: string
+}
+
+interface ApiListResult {
+  data: ApiActivity[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+function fromApi(d: ApiActivity): Activity {
+  return {
+    id: d.id,
+    type: (d.type as Activity['type']) ?? 'note',
+    title: d.title ?? '',
+    description: d.description,
+    relatedTo: d.relatedTo,
+    relatedType: d.relatedType as Activity['relatedType'],
+    relatedName: d.relatedName,
+    owner: d.owner ?? '',
+    createdAt: d.createdAt ?? new Date().toISOString(),
+    completed: d.completed ?? false,
+    dueDate: d.dueDate,
+    priority: d.priority as Activity['priority'],
+  }
+}
+
+async function fetchActivities(params: {
+  relatedTo?: string
+  relatedType?: string
+  type?: string
+  completed?: boolean
+  page?: number
+  pageSize?: number
+} = {}): Promise<Activity[]> {
+  const qs = new URLSearchParams()
+  if (params.relatedTo)             qs.set('relatedTo', params.relatedTo)
+  if (params.relatedType)           qs.set('relatedType', params.relatedType)
+  if (params.type)                  qs.set('type', params.type)
+  if (params.completed !== undefined) qs.set('completed', String(params.completed))
+  if (params.page)                  qs.set('page', String(params.page))
+  qs.set('pageSize', String(params.pageSize ?? 50))
+
+  const res = await api.get<ApiListResult>(`/activities?${qs}`)
+  return res.data.map(fromApi)
+}
+
 export const activityService = {
   async getActivities(): Promise<Activity[]> {
-    await delay(450)
-    return activityStore.getAll()
-  },
-
-  async getActivitiesByCustomer(customerId: string): Promise<Activity[]> {
-    await delay(350)
-    return activityStore.getByCustomer(customerId)
-  },
-
-  async getActivitiesByLead(leadId: string): Promise<Activity[]> {
-    await delay(350)
-    return activityStore.getByLead(leadId)
-  },
-
-  async getActivitiesByDeal(dealId: string): Promise<Activity[]> {
-    await delay(350)
-    return activityStore.getByDeal(dealId)
-  },
-
-  async createActivity(input: ActivityInput): Promise<Activity> {
-    await delay(500)
-    return activityStore.create(input)
-  },
-
-  async updateActivity(id: string, input: Partial<ActivityInput>): Promise<Activity> {
-    await delay(500)
-    return activityStore.update(id, input)
-  },
-
-  async deleteActivity(id: string): Promise<void> {
-    await delay(400)
-    activityStore.remove(id)
-  },
-
-  async markComplete(id: string): Promise<Activity> {
-    await delay(300)
-    return activityStore.markComplete(id)
+    return fetchActivities({ pageSize: 100 })
   },
 
   async getTasks(): Promise<Activity[]> {
-    await delay(400)
-    return activityStore.getTasks()
+    return fetchActivities({ type: 'task', completed: false, pageSize: 100 })
+  },
+
+  async getActivitiesByCustomer(customerId: string): Promise<Activity[]> {
+    return fetchActivities({ relatedTo: customerId, relatedType: 'customer', pageSize: 100 })
+  },
+
+  async getActivitiesByLead(leadId: string): Promise<Activity[]> {
+    return fetchActivities({ relatedTo: leadId, relatedType: 'lead', pageSize: 100 })
+  },
+
+  async getActivitiesByDeal(dealId: string): Promise<Activity[]> {
+    return fetchActivities({ relatedTo: dealId, relatedType: 'deal', pageSize: 100 })
+  },
+
+  async getActivity(id: string): Promise<Activity> {
+    const d = await api.get<ApiActivity>(`/activities/${id}`)
+    return fromApi(d)
+  },
+
+  async createActivity(input: ActivityInput): Promise<Activity> {
+    const d = await api.post<ApiActivity>('/activities', input)
+    return fromApi(d)
+  },
+
+  async updateActivity(id: string, input: Partial<ActivityInput>): Promise<Activity> {
+    const d = await api.patch<ApiActivity>(`/activities/${id}`, input)
+    return fromApi(d)
+  },
+
+  async markComplete(id: string): Promise<Activity> {
+    const d = await api.patch<ApiActivity>(`/activities/${id}`, { completed: true })
+    return fromApi(d)
+  },
+
+  async deleteActivity(id: string): Promise<void> {
+    await api.delete(`/activities/${id}`)
   },
 }
