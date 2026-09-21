@@ -1,9 +1,14 @@
-import { Bell, Check, Lock, Shield, X, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Bell, Check, Lock, Shield, X, Plus, Trash2, ShieldCheck } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { multiFactor } from 'firebase/auth'
 import { useAuth } from '@/context/AuthContext'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useUsers } from '@/hooks/useUsers'
 import { useCustomFields, useCreateCustomField, useDeleteCustomField } from '@/hooks/useCustomFields'
+import { useToast } from '@/components/common/ToastProvider'
+import { ChangePasswordModal } from '@/components/settings/ChangePasswordModal'
+import { TwoFactorSetupModal } from '@/components/settings/TwoFactorModal'
+import { firebaseAuth } from '@/lib/firebase'
 import type { CustomField, CustomFieldType } from '@/types/customField'
 
 const ROLE_LABELS: Record<string, string> = {
@@ -160,12 +165,44 @@ function AddCustomFieldForm({ onClose }: { onClose: () => void }) {
 export function SettingsPage() {
   usePageTitle('Settings')
   const { user } = useAuth()
+  const { notify } = useToast()
   const { data: users = [] } = useUsers()
   const { data: customFields = [] } = useCustomFields()
   const deleteField = useDeleteCustomField()
   const [showAddField, setShowAddField] = useState(false)
+  const [showChangePw, setShowChangePw] = useState(false)
+  const [showSetup2fa, setShowSetup2fa] = useState(false)
+  const [is2faEnabled, setIs2faEnabled] = useState(false)
+  const [disabling2fa, setDisabling2fa] = useState(false)
+
+  // Check 2FA enrollment status
+  useEffect(() => {
+    const fbUser = firebaseAuth.currentUser
+    if (!fbUser) return
+    const factors = multiFactor(fbUser).enrolledFactors
+    setIs2faEnabled(factors.length > 0)
+  }, [])
+
+  async function handleDisable2fa() {
+    const fbUser = firebaseAuth.currentUser
+    if (!fbUser) return
+    setDisabling2fa(true)
+    try {
+      const factors = multiFactor(fbUser).enrolledFactors
+      for (const factor of factors) {
+        await multiFactor(fbUser).unenroll(factor)
+      }
+      setIs2faEnabled(false)
+      notify('Two-factor authentication disabled', 'success')
+    } catch {
+      notify('Failed to disable 2FA. Please try again.', 'error')
+    } finally {
+      setDisabling2fa(false)
+    }
+  }
 
   return (
+    <>
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Settings</h2>
@@ -278,40 +315,61 @@ export function SettingsPage() {
       {/* Security */}
       <SectionCard
         title="Security"
-        description="Authentication and access control settings."
+        description="Manage your password and two-factor authentication."
       >
         <div className="space-y-3">
+          {/* Password */}
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div className="flex items-center gap-3">
               <Shield className="h-5 w-5 text-slate-400" aria-hidden />
               <div>
                 <p className="text-sm font-medium text-slate-900">Password</p>
-                <p className="text-xs text-slate-500">Last changed: never</p>
+                <p className="text-xs text-slate-500">Update your account password</p>
               </div>
             </div>
             <button
               type="button"
-              disabled
-              title="Available when Rails API is connected"
-              className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed"
+              onClick={() => setShowChangePw(true)}
+              className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
             >
               Change
             </button>
           </div>
 
+          {/* 2FA */}
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div className="flex items-center gap-3">
-              <Lock className="h-5 w-5 text-slate-400" aria-hidden />
+              {is2faEnabled
+                ? <ShieldCheck className="h-5 w-5 text-emerald-500" aria-hidden />
+                : <Lock className="h-5 w-5 text-slate-400" aria-hidden />
+              }
               <div>
-                <p className="text-sm font-medium text-slate-900">
-                  Two-factor authentication
+                <p className="text-sm font-medium text-slate-900">Two-factor authentication</p>
+                <p className="text-xs text-slate-500">
+                  {is2faEnabled
+                    ? 'Enabled — TOTP authenticator app'
+                    : 'Add an extra layer of security to your account'}
                 </p>
-                <p className="text-xs text-slate-500">Not configured</p>
               </div>
             </div>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-500">
-              Unavailable
-            </span>
+            {is2faEnabled ? (
+              <button
+                type="button"
+                onClick={() => void handleDisable2fa()}
+                disabled={disabling2fa}
+                className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+              >
+                {disabling2fa ? 'Disabling…' : 'Disable'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowSetup2fa(true)}
+                className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700"
+              >
+                Enable
+              </button>
+            )}
           </div>
         </div>
       </SectionCard>
@@ -470,5 +528,27 @@ export function SettingsPage() {
         </div>
       </SectionCard>
     </div>
+
+    <ChangePasswordModal
+      open={showChangePw}
+      userEmail={user?.email ?? ''}
+      onClose={() => setShowChangePw(false)}
+      onSuccess={() => {
+        setShowChangePw(false)
+        notify('Password updated successfully', 'success')
+      }}
+    />
+
+    <TwoFactorSetupModal
+      open={showSetup2fa}
+      userEmail={user?.email ?? ''}
+      onClose={() => setShowSetup2fa(false)}
+      onEnrolled={() => {
+        setIs2faEnabled(true)
+        setShowSetup2fa(false)
+        notify('Two-factor authentication enabled', 'success')
+      }}
+    />
+    </>
   )
 }
