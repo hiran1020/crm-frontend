@@ -51,7 +51,7 @@ function fromApi(d: ApiCustomer): Customer {
 }
 
 function toApi(input: CustomerInput): Record<string, unknown> {
-  return {
+  const payload: Record<string, unknown> = {
     firstName: input.firstName,
     lastName: input.lastName,
     email: input.email,
@@ -59,11 +59,12 @@ function toApi(input: CustomerInput): Record<string, unknown> {
     company: input.company,
     jobTitle: input.jobTitle,
     status: input.status,
-    tagIds: input.tags ?? [],
     ownerId: input.ownerId ?? input.owner,
     ownerName: input.owner,
     ownerInitials: toInitials(input.owner),
   }
+  if (input.tags !== undefined) payload.tagIds = input.tags
+  return payload
 }
 
 interface ApiListResult {

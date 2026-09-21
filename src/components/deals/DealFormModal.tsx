@@ -26,7 +26,7 @@ export function DealFormModal({
 }: DealFormModalProps) {
   const isEdit = Boolean(deal)
 
-  const customersQuery = useCustomers({ pageSize: 100 })
+  const customersQuery = useCustomers({ pageSize: 50 })
   const customers = customersQuery.data?.data ?? []
   const { data: users = [] } = useUsers()
   const { user: authUser } = useAuth()
@@ -65,6 +65,8 @@ export function DealFormModal({
     const defaultUser = users.find((u) => u.id === authUser?.id) ?? users[0]
 
     if (deal) {
+      const matchedUser = users.find((u) => u.id === deal.ownerId)
+        ?? users.find((u) => u.name === deal.owner)
       reset({
         title: deal.title,
         customerId: deal.customerId,
@@ -72,8 +74,8 @@ export function DealFormModal({
         customerCompany: deal.customerCompany ?? '',
         amount: deal.amount,
         stage: deal.stage,
-        owner: deal.owner,
-        ownerId: deal.ownerId ?? deal.owner,
+        owner: matchedUser?.name ?? deal.owner,
+        ownerId: matchedUser?.id ?? '',
         expectedCloseDate: deal.expectedCloseDate,
         description: deal.description ?? '',
         probability: deal.probability,

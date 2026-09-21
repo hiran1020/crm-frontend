@@ -57,6 +57,8 @@ export function CustomerFormModal({
     if (!open) return
 
     if (customer) {
+      const matchedUser = users.find((u) => u.id === customer.ownerId)
+        ?? users.find((u) => u.name === customer.owner)
       reset({
         firstName: customer.firstName,
         lastName: customer.lastName,
@@ -65,8 +67,8 @@ export function CustomerFormModal({
         company: customer.company,
         jobTitle: customer.jobTitle,
         status: customer.status,
-        owner: customer.owner,
-        ownerId: customer.ownerId ?? customer.owner,
+        owner: matchedUser?.name ?? customer.owner,
+        ownerId: matchedUser?.id ?? '',
       })
       setCustomFieldValues(((customer as unknown as Record<string, unknown>).customFields as Record<string, unknown>) ?? {})
     } else {

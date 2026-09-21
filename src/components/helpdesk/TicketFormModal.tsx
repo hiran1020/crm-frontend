@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, type ReactNode } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type Resolver } from 'react-hook-form'
 import { useUsers } from '@/hooks/useUsers'
 import { useAuth } from '@/context/AuthContext'
 import { ticketFormSchema, type TicketFormValues } from '@/schemas/ticket'
@@ -37,8 +37,8 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
   const { data: users = [] } = useUsers()
   const isEdit = Boolean(ticket)
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm<TicketFormValues>({
-    resolver: zodResolver(ticketFormSchema),
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<TicketFormValues>({
+    resolver: zodResolver(ticketFormSchema) as Resolver<TicketFormValues>,
     defaultValues: {
       title: '', description: '', status: 'Open', priority: 'Medium',
       category: 'General Inquiry', assignedTo: '', assigneeId: '',
@@ -68,7 +68,7 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
         assignedTo: defaultUser?.name ?? '',
         assigneeId: defaultUser?.id ?? '',
         customerId: '', customerName: '',
-        createdBy: user?.name ?? '',
+        createdBy: user?.name ?? user?.email ?? '',
       })
     }
   }, [open, ticket, reset, users, user])
@@ -136,7 +136,7 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
             <Field label="Assigned to" error={errors.assignedTo?.message}>
               <select
                 className={cls(errors.assignedTo)}
-                {...register('assigneeId')}
+                value={watch('assigneeId') ?? ''}
                 onChange={(e) => {
                   const selected = users.find((u) => u.id === e.target.value)
                   setValue('assigneeId', e.target.value)

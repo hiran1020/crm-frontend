@@ -7,7 +7,7 @@ export const dealFormSchema = z.object({
   customerCompany: z.string().optional().default(''),
   amount: z
     .number({ error: 'Amount must be a number' })
-    .positive('Amount must be greater than 0'),
+    .min(0, 'Amount must be 0 or greater'),
   stage: z.enum(['New', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost']),
   owner: z.string().min(1, 'Select an owner'),
   ownerId: z.string().min(1, 'Select an owner'),

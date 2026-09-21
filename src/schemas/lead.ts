@@ -16,7 +16,7 @@ export const leadFormSchema = z.object({
   ]),
   value: z
     .number({ error: 'Value must be a number' })
-    .positive('Value must be greater than 0'),
+    .min(0, 'Value must be 0 or greater'),
   owner: z.string().min(1, 'Select an owner'),
   ownerId: z.string().min(1, 'Select an owner'),
   status: z.enum(['New', 'Contacted', 'Qualified', 'Lost', 'Converted']),

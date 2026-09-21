@@ -9,6 +9,7 @@ export const ticketKeys = {
   details:  () => [...ticketKeys.all, 'detail'] as const,
   detail:   (id: string) => [...ticketKeys.details(), id] as const,
   openCount: () => [...ticketKeys.all, 'openCount'] as const,
+  stats:    () => [...ticketKeys.all, 'stats'] as const,
 }
 
 export function useTickets(params: TicketListParams = {}) {
@@ -32,6 +33,14 @@ export function useTicketOpenCount() {
     queryKey: ticketKeys.openCount(),
     queryFn: ticketService.getOpenCount,
     staleTime: 60_000,
+  })
+}
+
+export function useTicketStats() {
+  return useQuery({
+    queryKey: ticketKeys.stats(),
+    queryFn: () => ticketService.getTickets({ pageSize: 1000 }),
+    staleTime: 5 * 60 * 1000,
   })
 }
 

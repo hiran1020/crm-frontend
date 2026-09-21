@@ -21,6 +21,7 @@ import {
   useLeads,
   useUpdateLead,
 } from '@/hooks/useLeads'
+import { useUsers } from '@/hooks/useUsers'
 import { leadService } from '@/services/leadService'
 import type { LeadFormValues } from '@/schemas/lead'
 import type { Lead, LeadInput, LeadStatus } from '@/types/lead'
@@ -66,6 +67,7 @@ export function LeadsPage() {
 
   const leadsQuery = useLeads(listParams)
   const ownersQuery = useLeadOwners()
+  const { data: users = [] } = useUsers()
   const createLead = useCreateLead()
   const updateLead = useUpdateLead()
   const deleteLead = useDeleteLead()
@@ -277,6 +279,8 @@ export function LeadsPage() {
         const existing = await leadService.findByEmail(mapped.email)
         if (existing) { skipped++; continue }
 
+        const ownerName = mapped.owner ?? ''
+        const matchedUser = users.find((u) => u.name === ownerName)
         await createLead.mutateAsync({
           name: mapped.name ?? '',
           company: mapped.company ?? '',
@@ -285,7 +289,8 @@ export function LeadsPage() {
           source: mapped.source ?? 'Website',
           status: mapped.status ?? 'New',
           value: mapped.value ?? 0,
-          owner: mapped.owner ?? '',
+          owner: ownerName,
+          ownerId: matchedUser?.id ?? '',
           notes: mapped.notes ?? '',
           tags: [],
         })

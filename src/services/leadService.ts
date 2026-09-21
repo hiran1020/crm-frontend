@@ -70,7 +70,7 @@ function fromApi(d: ApiLead): Lead {
 }
 
 function toApi(input: LeadInput): Record<string, unknown> {
-  return {
+  const payload: Record<string, unknown> = {
     name: input.name,
     company: input.company,
     email: input.email,
@@ -79,11 +79,12 @@ function toApi(input: LeadInput): Record<string, unknown> {
     status: input.status,
     value: input.value,
     notes: input.notes,
-    tagIds: input.tags ?? [],
     ownerId: input.ownerId ?? input.owner,
     ownerName: input.owner,
     ownerInitials: toInitials(input.owner),
   }
+  if (input.tags !== undefined) payload.tagIds = input.tags
+  return payload
 }
 
 export const leadService = {

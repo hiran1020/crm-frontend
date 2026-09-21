@@ -10,7 +10,7 @@ export const ticketFormSchema = z.object({
   assigneeId:   z.string().optional(),
   customerId:   z.string().optional(),
   customerName: z.string().optional(),
-  createdBy:    z.string().trim().min(1, 'Reporter name is required'),
+  createdBy:    z.string().trim().optional().default(''),
 })
 
 export type TicketFormValues = z.infer<typeof ticketFormSchema>

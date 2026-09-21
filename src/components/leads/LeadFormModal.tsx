@@ -44,6 +44,8 @@ export function LeadFormModal({
     if (!open) return
 
     if (lead) {
+      const matchedUser = users.find((u) => u.id === lead.ownerId)
+        ?? users.find((u) => u.name === lead.owner)
       reset({
         name: lead.name,
         company: lead.company,
@@ -51,8 +53,8 @@ export function LeadFormModal({
         phone: lead.phone,
         source: lead.source,
         value: lead.value,
-        owner: lead.owner,
-        ownerId: lead.ownerId ?? lead.owner,
+        owner: matchedUser?.name ?? lead.owner,
+        ownerId: matchedUser?.id ?? '',
         status: lead.status,
         notes: lead.notes,
       })

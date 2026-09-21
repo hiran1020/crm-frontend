@@ -23,6 +23,7 @@ function fixTimestamps<T>(val: T): T {
 }
 
 async function getToken(): Promise<string> {
+  await firebaseAuth.authStateReady()
   const user = firebaseAuth.currentUser
   if (!user) throw new Error('Not authenticated')
   return user.getIdToken()

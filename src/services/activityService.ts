@@ -67,7 +67,7 @@ export const activityService = {
   },
 
   async getTasks(): Promise<Activity[]> {
-    return fetchActivities({ type: 'task', completed: false, pageSize: 100 })
+    return fetchActivities({ type: 'task', pageSize: 100 })
   },
 
   async getActivitiesByCustomer(customerId: string): Promise<Activity[]> {

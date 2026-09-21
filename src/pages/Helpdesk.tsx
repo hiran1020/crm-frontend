@@ -28,6 +28,7 @@ import {
   useCreateTicket,
   useDeleteTicket,
   useLinkClickUpTask,
+  useTicketStats,
   useTickets,
   useUpdateTicket,
 } from '@/hooks/useTickets'
@@ -69,7 +70,7 @@ export function HelpdeskPage() {
   }), [dSearch, status, priority, assignedTo, page])
 
   const ticketsQuery  = useTickets(params)
-  const allQuery      = useTickets({ pageSize: 1000 }) // for stats
+  const allQuery      = useTicketStats()
   const createTicket  = useCreateTicket()
   const updateTicket  = useUpdateTicket()
   const linkClickUp   = useLinkClickUpTask()

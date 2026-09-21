@@ -25,6 +25,7 @@ import {
   useDeleteCustomer,
   useUpdateCustomer,
 } from '@/hooks/useCustomers'
+import { useUsers } from '@/hooks/useUsers'
 import { customerService } from '@/services/customerService'
 import type { CustomerFormValues } from '@/schemas/customer'
 import type {
@@ -74,6 +75,7 @@ export function CustomersPage() {
 
   const customersQuery = useCustomers(listParams)
   const ownersQuery = useCustomerOwners()
+  const { data: users = [] } = useUsers()
   const createCustomer = useCreateCustomer()
   const updateCustomer = useUpdateCustomer()
   const deleteCustomer = useDeleteCustomer()
@@ -259,6 +261,8 @@ export function CustomersPage() {
         const existing = await customerService.findByEmail(mapped.email)
         if (existing) { skipped++; continue }
 
+        const ownerName = mapped.owner ?? ''
+        const matchedUser = users.find((u) => u.name === ownerName)
         await createCustomer.mutateAsync({
           firstName: mapped.firstName ?? '',
           lastName: mapped.lastName ?? '',
@@ -267,7 +271,8 @@ export function CustomersPage() {
           company: mapped.company ?? '',
           jobTitle: mapped.jobTitle ?? '',
           status: mapped.status ?? 'Active',
-          owner: mapped.owner ?? '',
+          owner: ownerName,
+          ownerId: matchedUser?.id ?? '',
         })
         imported++
       } catch (err) {
