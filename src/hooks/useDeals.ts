@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dealService } from '@/services/dealService'
-import type { DealInput, DealListParams, DealStage } from '@/types/deal'
+import type { Deal, DealInput, DealListParams, DealListResult, DealStage } from '@/types/deal'
 
 export const dealKeys = {
   all: ['deals'] as const,
@@ -67,9 +67,19 @@ export function useDeleteDeal() {
 
   return useMutation({
     mutationFn: (id: string) => dealService.deleteDeal(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: dealKeys.all })
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: dealKeys.all })
+      const snapshots = queryClient.getQueriesData<DealListResult>({ queryKey: dealKeys.lists() })
+      queryClient.setQueriesData<DealListResult>({ queryKey: dealKeys.lists() }, (old) => {
+        if (!old) return old
+        return { ...old, data: old.data.filter((d) => d.id !== id), total: old.total - 1 }
+      })
+      return { snapshots }
     },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data))
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: dealKeys.all }),
   })
 }
 
@@ -79,9 +89,22 @@ export function useUpdateDealStage() {
   return useMutation({
     mutationFn: ({ id, stage }: { id: string; stage: DealStage }) =>
       dealService.updateStage(id, stage),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: dealKeys.all })
+    onMutate: async ({ id, stage }) => {
+      await queryClient.cancelQueries({ queryKey: dealKeys.all })
+      const snapshots = queryClient.getQueriesData<DealListResult>({ queryKey: dealKeys.lists() })
+      queryClient.setQueriesData<DealListResult>({ queryKey: dealKeys.lists() }, (old) => {
+        if (!old) return old
+        return { ...old, data: old.data.map((d) => (d.id === id ? { ...d, stage } : d)) }
+      })
+      const detailSnap = queryClient.getQueryData<Deal>(dealKeys.detail(id))
+      if (detailSnap) queryClient.setQueryData(dealKeys.detail(id), { ...detailSnap, stage })
+      return { snapshots, detailSnap }
     },
+    onError: (_err, { id }, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data))
+      if (ctx?.detailSnap) queryClient.setQueryData(dealKeys.detail(id), ctx.detailSnap)
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: dealKeys.all }),
   })
 }
 

@@ -292,7 +292,12 @@ export function CustomersPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-slate-900">Customers</h2>
+          <h2 className="text-xl font-semibold text-slate-900">
+            Customers
+            {customersQuery.isFetching && !isInitialLoading && (
+              <span className="ml-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-500 border-t-transparent align-middle" aria-label="Refreshing" />
+            )}
+          </h2>
           <p className="mt-1 text-sm text-slate-500">
             Search, filter, and manage your customer list.
           </p>

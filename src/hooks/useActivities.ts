@@ -49,6 +49,7 @@ export function useTasks() {
   return useQuery({
     queryKey: activityKeys.tasks(),
     queryFn: activityService.getTasks,
+    staleTime: 60_000,
   })
 }
 

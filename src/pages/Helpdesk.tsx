@@ -360,8 +360,16 @@ export function HelpdeskPage() {
             </table>
           </div>
 
-          <Pagination page={result?.page ?? page} totalPages={result?.totalPages ?? 1}
-            total={result?.total ?? 0} pageSize={PAGE_SIZE} onPageChange={setPage} />
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-sm text-slate-500">
+              {result?.total ?? 0} ticket{(result?.total ?? 0) !== 1 ? 's' : ''} total
+              {ticketsQuery.isFetching && (
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" aria-label="Refreshing" />
+              )}
+            </p>
+            <Pagination page={result?.page ?? page} totalPages={result?.totalPages ?? 1}
+              total={result?.total ?? 0} pageSize={PAGE_SIZE} onPageChange={setPage} />
+          </div>
         </>
       )}
 

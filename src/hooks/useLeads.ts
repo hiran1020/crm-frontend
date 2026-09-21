@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { leadService } from '@/services/leadService'
-import type { LeadInput, LeadListParams } from '@/types/lead'
+import { userService } from '@/services/userService'
+import type { LeadInput, LeadListParams, LeadListResult } from '@/types/lead'
 
 export const leadKeys = {
   all: ['leads'] as const,
@@ -29,8 +30,10 @@ export function useLead(id: string) {
 
 export function useLeadOwners() {
   return useQuery({
-    queryKey: leadKeys.owners(),
-    queryFn: () => leadService.getOwners(),
+    queryKey: ['crmUsers', 'list'] as const,
+    queryFn: () => userService.getUsers(),
+    select: (users) => users.map((u) => u.name),
+    staleTime: 10 * 60_000,
   })
 }
 
@@ -65,9 +68,19 @@ export function useDeleteLead() {
 
   return useMutation({
     mutationFn: (id: string) => leadService.deleteLead(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: leadKeys.all })
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: leadKeys.all })
+      const snapshots = queryClient.getQueriesData<LeadListResult>({ queryKey: leadKeys.lists() })
+      queryClient.setQueriesData<LeadListResult>({ queryKey: leadKeys.lists() }, (old) => {
+        if (!old) return old
+        return { ...old, data: old.data.filter((l) => l.id !== id), total: old.total - 1 }
+      })
+      return { snapshots }
     },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data))
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: leadKeys.all }),
   })
 }
 

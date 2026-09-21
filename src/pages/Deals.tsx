@@ -172,7 +172,12 @@ export function DealsPage() {
             </option>
           ))}
         </select>
-        <span className="text-xs text-slate-500">{filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''}</span>
+        <span className="flex items-center gap-1.5 text-xs text-slate-500">
+          {filteredDeals.length} deal{filteredDeals.length !== 1 ? 's' : ''}
+          {dealsQuery.isFetching && (
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" aria-label="Refreshing" />
+          )}
+        </span>
         <SavedViewsDropdown
           entityType="deal"
           currentFilters={{ owner: ownerFilter }}

@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { auditService, type AuditLogParams } from '@/services/auditService'
-import type { AuditEntity, AuditLogEntry } from '@/types/auditLog'
+import type { AuditEntity } from '@/types/auditLog'
 
 export const auditKeys = {
   all: ['auditLog'] as const,
@@ -15,6 +15,7 @@ export function useAuditLog(params: AuditLogParams = {}) {
     queryKey: auditKeys.list(params),
     queryFn: () => auditService.getAuditLog(params),
     placeholderData: (previous) => previous,
+    staleTime: 30_000,
   })
 }
 
@@ -23,17 +24,6 @@ export function useEntityAuditLog(entity: AuditEntity, entityId: string) {
     queryKey: auditKeys.entity(entity, entityId),
     queryFn: () => auditService.getEntityAuditLog(entity, entityId),
     enabled: Boolean(entityId),
-  })
-}
-
-export function useLogAction() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (entry: Omit<AuditLogEntry, 'id' | 'createdAt'>) =>
-      auditService.logAction(entry),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: auditKeys.all })
-    },
+    staleTime: 30_000,
   })
 }

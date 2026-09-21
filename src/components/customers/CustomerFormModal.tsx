@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import {
   customerFormSchema,
@@ -28,8 +28,10 @@ export function CustomerFormModal({
   const isEdit = Boolean(customer)
   const { data: customFields = [] } = useCustomFields('customer')
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, unknown>>({})
+  const [apiError, setApiError] = useState<string | null>(null)
   const { data: users = [] } = useUsers()
   const { user: authUser } = useAuth()
+  const apiErrorRef = useRef<HTMLParagraphElement>(null)
 
   const {
     register,
@@ -86,6 +88,7 @@ export function CustomerFormModal({
       })
       setCustomFieldValues({})
     }
+    setApiError(null)
   }, [open, customer, reset, users, authUser])
 
   if (!open) {
@@ -124,7 +127,13 @@ export function CustomerFormModal({
           className="mt-6 space-y-4"
           onSubmit={(event) => {
             void handleSubmit(async (values) => {
-              await onSubmit({ ...values, customFields: customFieldValues } as CustomerFormValues)
+              try {
+                await onSubmit({ ...values, customFields: customFieldValues } as CustomerFormValues)
+                setApiError(null)
+              } catch (err) {
+                setApiError(err instanceof Error ? err.message : 'Could not save customer')
+                setTimeout(() => apiErrorRef.current?.scrollIntoView({ block: 'nearest' }), 50)
+              }
             })(event)
           }}
         >
@@ -280,6 +289,12 @@ export function CustomerFormModal({
                 ))}
               </div>
             </div>
+          )}
+
+          {apiError && (
+            <p ref={apiErrorRef} className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600" role="alert">
+              {apiError}
+            </p>
           )}
 
           <div className="flex justify-end gap-3 pt-2">

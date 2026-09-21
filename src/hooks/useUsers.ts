@@ -18,6 +18,7 @@ export function useUsers() {
   return useQuery({
     queryKey: userKeys.lists(),
     queryFn: () => userService.getUsers(),
+    staleTime: 10 * 60_000,
   })
 }
 

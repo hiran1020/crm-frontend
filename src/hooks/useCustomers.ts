@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { customerService } from '@/services/customerService'
+import { userService } from '@/services/userService'
 import type {
   CustomerInput,
   CustomerListParams,
+  CustomerListResult,
 } from '@/types/customer'
 
 export const customerKeys = {
@@ -33,8 +35,10 @@ export function useCustomer(id: string) {
 
 export function useCustomerOwners() {
   return useQuery({
-    queryKey: customerKeys.owners(),
-    queryFn: () => customerService.getOwners(),
+    queryKey: ['crmUsers', 'list'] as const,
+    queryFn: () => userService.getUsers(),
+    select: (users) => users.map((u) => u.name),
+    staleTime: 10 * 60_000,
   })
 }
 
@@ -69,9 +73,19 @@ export function useDeleteCustomer() {
 
   return useMutation({
     mutationFn: (id: string) => customerService.deleteCustomer(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: customerKeys.all })
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: customerKeys.all })
+      const snapshots = queryClient.getQueriesData<CustomerListResult>({ queryKey: customerKeys.lists() })
+      queryClient.setQueriesData<CustomerListResult>({ queryKey: customerKeys.lists() }, (old) => {
+        if (!old) return old
+        return { ...old, data: old.data.filter((c) => c.id !== id), total: old.total - 1 }
+      })
+      return { snapshots }
     },
+    onError: (_err, _id, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data))
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: customerKeys.all }),
   })
 }
 

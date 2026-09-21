@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { useCustomers } from '@/hooks/useCustomers'
 import { useUsers } from '@/hooks/useUsers'
@@ -25,6 +25,8 @@ export function DealFormModal({
   onSubmit,
 }: DealFormModalProps) {
   const isEdit = Boolean(deal)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const apiErrorRef = useRef<HTMLParagraphElement>(null)
 
   const customersQuery = useCustomers({ pageSize: 50 })
   const customers = customersQuery.data?.data ?? []
@@ -88,6 +90,7 @@ export function DealFormModal({
         expectedCloseDate: '', description: '', probability: undefined,
       })
     }
+    setApiError(null)
   }, [open, deal, defaultStage, reset, users, authUser])
 
   if (!open) return null
@@ -116,7 +119,15 @@ export function DealFormModal({
         <form
           className="mt-6 space-y-4"
           onSubmit={(event) => {
-            void handleSubmit(async (values) => { await onSubmit(values) })(event)
+            void handleSubmit(async (values) => {
+              try {
+                await onSubmit(values)
+                setApiError(null)
+              } catch (err) {
+                setApiError(err instanceof Error ? err.message : 'Could not save deal')
+                setTimeout(() => apiErrorRef.current?.scrollIntoView({ block: 'nearest' }), 50)
+              }
+            })(event)
           }}
         >
           <Field label="Title" error={errors.title?.message}>
@@ -188,6 +199,12 @@ export function DealFormModal({
               className={[inputClass(errors.description), 'h-auto resize-none py-2'].join(' ')}
               placeholder="Optional deal notes or context…" />
           </Field>
+
+          {apiError && (
+            <p ref={apiErrorRef} className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600" role="alert">
+              {apiError}
+            </p>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} disabled={busy}

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm, type Resolver } from 'react-hook-form'
 import { leadFormSchema, type LeadFormValues } from '@/schemas/lead'
 import { useUsers } from '@/hooks/useUsers'
@@ -22,6 +22,8 @@ export function LeadFormModal({
   onSubmit,
 }: LeadFormModalProps) {
   const isEdit = Boolean(lead)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const apiErrorRef = useRef<HTMLParagraphElement>(null)
   const { data: users = [] } = useUsers()
   const { user: authUser } = useAuth()
 
@@ -66,6 +68,7 @@ export function LeadFormModal({
         status: 'New', notes: '',
       })
     }
+    setApiError(null)
   }, [open, lead, reset, users, authUser])
 
   if (!open) return null
@@ -94,7 +97,15 @@ export function LeadFormModal({
         <form
           className="mt-6 space-y-4"
           onSubmit={(event) => {
-            void handleSubmit(async (values) => { await onSubmit(values) })(event)
+            void handleSubmit(async (values) => {
+              try {
+                await onSubmit(values)
+                setApiError(null)
+              } catch (err) {
+                setApiError(err instanceof Error ? err.message : 'Could not save lead')
+                setTimeout(() => apiErrorRef.current?.scrollIntoView({ block: 'nearest' }), 50)
+              }
+            })(event)
           }}
         >
           <div className="grid gap-4 sm:grid-cols-2">
@@ -169,6 +180,12 @@ export function LeadFormModal({
               className={[inputClass(errors.notes), 'h-auto resize-none py-2'].join(' ')}
             />
           </Field>
+
+          {apiError && (
+            <p ref={apiErrorRef} className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600" role="alert">
+              {apiError}
+            </p>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={onClose} disabled={busy}

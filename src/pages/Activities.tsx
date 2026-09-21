@@ -108,6 +108,15 @@ export function ActivitiesPage() {
         onCompletedChange={setCompleted}
       />
 
+      {!activitiesQuery.isLoading && (
+        <p className="flex items-center gap-2 text-sm text-slate-500">
+          {filtered.length} activit{filtered.length !== 1 ? 'ies' : 'y'}
+          {activitiesQuery.isFetching && (
+            <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" aria-label="Refreshing" />
+          )}
+        </p>
+      )}
+
       {activitiesQuery.isLoading ? (
         <div className="space-y-3 animate-pulse">
           {Array.from({ length: 6 }).map((_, i) => (
