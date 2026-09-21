@@ -101,13 +101,10 @@ export function LoginPage() {
 
         {/* Demo credentials */}
         <div className="mt-4 rounded-lg border border-border bg-slate-50 p-3 text-xs text-slate-500">
-          <p className="mb-1.5 font-semibold text-slate-600">Demo accounts (password: <code className="font-mono">password</code>)</p>
+          <p className="mb-1.5 font-semibold text-slate-600">Demo accounts (password: <code className="font-mono">passwordCRM</code>)</p>
           <div className="space-y-0.5">
             {[
-              { email: 'admin@crm.com',  role: 'Admin' },
-              { email: 'sarah@crm.com',  role: 'Manager' },
-              { email: 'david@crm.com',  role: 'Sales Agent' },
-              { email: 'alex@crm.com',   role: 'Support Agent' },
+              { email: 'hiran.basnet2@gmail.com',  role: 'Admin' },
             ].map(({ email, role }) => (
               <div key={email} className="flex items-center justify-between gap-2">
                 <code className="font-mono text-brand-700">{email}</code>
