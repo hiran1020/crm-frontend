@@ -57,21 +57,33 @@ function fromApi(d: ApiQuote): Quote {
   }
 }
 
+function toDatetime(date: string): string {
+  return date.includes('T') ? date : `${date}T00:00:00.000Z`
+}
+
 function toApi(input: Partial<QuoteInput>): Record<string, unknown> {
+  const lineItems = (input.lineItems ?? []).map((li) => ({
+    description: li.description,
+    quantity: li.quantity,
+    unitPrice: li.unitPrice,
+    total: li.total,
+  }))
+  const subtotal = lineItems.reduce((sum, li) => sum + li.total, 0)
+  const discount = input.discountAmount ?? 0
+  const taxRate = input.tax ?? 0
+  const total = subtotal - discount + (subtotal * taxRate) / 100
+
   return {
     dealId: input.dealId,
     customerId: input.customerId,
     customerName: input.customerName,
     status: input.status,
-    validUntil: input.validUntil,
+    validUntil: input.validUntil ? toDatetime(input.validUntil) : undefined,
     notes: input.notes,
-    tax: input.tax ?? 0,
-    lineItems: (input.lineItems ?? []).map((li) => ({
-      description: li.description,
-      quantity: li.quantity,
-      unitPrice: li.unitPrice,
-      total: li.total,
-    })),
+    tax: taxRate,
+    subtotal,
+    total,
+    lineItems,
   }
 }
 
