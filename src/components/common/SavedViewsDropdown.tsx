@@ -87,7 +87,7 @@ export function SavedViewsDropdown({ entityType, currentFilters, onApplyView }: 
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-lg border border-border bg-white shadow-lg">
+        <div className="absolute right-0 top-full z-20 mt-1 w-64 rounded-lg border border-border bg-white shadow-lg">
           {viewsQuery.isLoading ? (
             <p className="px-4 py-3 text-sm text-slate-400">Loading…</p>
           ) : viewsQuery.isError ? (
@@ -121,7 +121,10 @@ export function SavedViewsDropdown({ entityType, currentFilters, onApplyView }: 
                     </button>
                     <button
                       type="button"
-                      onClick={() => void deleteView.mutateAsync(view.id)}
+                      onClick={() => {
+                        if (!confirm(`Delete saved view "${view.name}"?`)) return
+                        void deleteView.mutateAsync(view.id)
+                      }}
                       disabled={deleteView.isPending}
                       className="shrink-0 rounded p-0.5 text-slate-400 hover:text-red-600 disabled:opacity-50"
                       aria-label={`Delete view ${view.name}`}

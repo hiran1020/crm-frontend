@@ -164,6 +164,68 @@ function AddCustomFieldForm({ onClose }: { onClose: () => void }) {
   )
 }
 
+const NOTIF_PREFS_KEY = 'crm_notif_prefs_v1'
+const DEFAULT_NOTIF_PREFS: Record<string, boolean> = {
+  'New lead assigned to me':   true,
+  'Deal stage change':         true,
+  'Task due today':            true,
+  'Customer activity updates': false,
+  'Weekly pipeline summary':   false,
+}
+
+function NotificationsCard() {
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => {
+    try {
+      const stored = localStorage.getItem(NOTIF_PREFS_KEY)
+      return stored ? { ...DEFAULT_NOTIF_PREFS, ...JSON.parse(stored) } : DEFAULT_NOTIF_PREFS
+    } catch {
+      return DEFAULT_NOTIF_PREFS
+    }
+  })
+
+  function toggle(label: string) {
+    const next = { ...prefs, [label]: !prefs[label] }
+    setPrefs(next)
+    try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next)) } catch {}
+  }
+
+  return (
+    <SectionCard
+      title="Notifications"
+      description="Configure how and when you receive alerts."
+    >
+      <div className="space-y-1">
+        {Object.entries(prefs).map(([label, enabled]) => (
+          <div key={label} className="flex items-center justify-between py-2.5 border-b border-border last:border-b-0">
+            <span className="text-sm text-slate-700">{label}</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={enabled}
+              onClick={() => toggle(label)}
+              className={[
+                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors',
+                enabled ? 'bg-brand-600' : 'bg-slate-200',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform',
+                  enabled ? 'translate-x-4' : 'translate-x-0',
+                ].join(' ')}
+              />
+            </button>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
+        <Bell className="h-3 w-3" aria-hidden />
+        Preferences saved locally. Server-side delivery coming soon.
+      </p>
+    </SectionCard>
+  )
+}
+
 export function SettingsPage() {
   usePageTitle('Settings')
   const { user } = useAuth()
@@ -254,7 +316,7 @@ export function SettingsPage() {
 
         <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
           <Lock className="h-3 w-3" aria-hidden />
-          Profile changes require backend access — available when Rails API is connected.
+          Name and role changes must be made by an admin in the Users section.
         </p>
       </SectionCard>
 
@@ -264,6 +326,9 @@ export function SettingsPage() {
         description="Active users with access to this CRM workspace."
       >
         <div className="space-y-3">
+          {users.length === 0 && (
+            <p className="text-sm text-slate-400">No team members found.</p>
+          )}
           {users.map((member) => (
             <div
               key={member.id}
@@ -284,7 +349,9 @@ export function SettingsPage() {
                 </span>
                 {member.status === 'active' ? (
                   <span className="h-2 w-2 rounded-full bg-emerald-400" title="Active" />
-                ) : null}
+                ) : (
+                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-400">Inactive</span>
+                )}
               </div>
             </div>
           ))}
@@ -292,41 +359,7 @@ export function SettingsPage() {
       </SectionCard>
 
       {/* Notifications */}
-      <SectionCard
-        title="Notifications"
-        description="Configure how and when you receive alerts."
-      >
-        <div className="space-y-3">
-          {[
-            { label: 'New lead assigned to me', enabled: true },
-            { label: 'Deal stage change', enabled: true },
-            { label: 'Task due today', enabled: true },
-            { label: 'Customer activity updates', enabled: false },
-            { label: 'Weekly pipeline summary', enabled: false },
-          ].map((pref) => (
-            <div
-              key={pref.label}
-              className="flex items-center justify-between py-2"
-            >
-              <span className="text-sm text-slate-700">{pref.label}</span>
-              <span
-                className={[
-                  'rounded-full px-2.5 py-0.5 text-xs font-medium',
-                  pref.enabled
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-slate-100 text-slate-500',
-                ].join(' ')}
-              >
-                {pref.enabled ? 'On' : 'Off'}
-              </span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
-          <Bell className="h-3 w-3" aria-hidden />
-          Notification preferences will be configurable when the backend is connected.
-        </p>
-      </SectionCard>
+      <NotificationsCard />
 
       {/* Security */}
       <SectionCard
@@ -428,8 +461,12 @@ export function SettingsPage() {
                   <td className="px-3 py-2 text-right">
                     <button
                       type="button"
-                      onClick={() => void deleteField.mutateAsync(cf.id)}
-                      className="rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                      onClick={() => {
+                        if (!confirm(`Delete field "${cf.name}"? This cannot be undone.`)) return
+                        void deleteField.mutateAsync(cf.id)
+                      }}
+                      disabled={deleteField.isPending}
+                      className="rounded-md p-1 text-slate-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
                     >
                       <Trash2 className="h-3.5 w-3.5" aria-hidden />
                     </button>
@@ -589,7 +626,7 @@ export function SettingsPage() {
               type="text"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
-              placeholder="New tag name\u2026"
+              placeholder="New tag name…"
               className="h-8 flex-1 rounded-md border border-border px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
               aria-label="New tag name"
             />
@@ -654,37 +691,31 @@ export function SettingsPage() {
         </div>
         <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
           <Shield className="h-3 w-3" aria-hidden />
-          Permissions are enforced server-side when the Rails API is connected.
+          Permissions are enforced server-side on every API request.
         </p>
       </SectionCard>
 
       {/* Developer Tools */}
       <SectionCard
         title="Developer Tools"
-        description="Reset demo data for testing purposes."
+        description="Manage local preferences and browser state."
       >
-        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div>
-            <p className="text-sm font-medium text-amber-900">Reset all demo data</p>
-            <p className="text-xs text-amber-700">
-              Clears localStorage and restores seed data on next reload.
+            <p className="text-sm font-medium text-slate-900">Clear local preferences</p>
+            <p className="text-xs text-slate-500">
+              Resets notification toggles and any locally stored UI state.
             </p>
           </div>
           <button
             type="button"
             onClick={() => {
-              const keys = [
-                'crm_customers_v1',
-                'crm_leads_v1',
-                'crm_deals_v1',
-                'crm_activities_v1',
-              ]
-              keys.forEach((k) => localStorage.removeItem(k))
+              localStorage.removeItem('crm_notif_prefs_v1')
               window.location.reload()
             }}
-            className="rounded-md bg-amber-600 px-3 py-2 text-sm font-medium text-white hover:bg-amber-700"
+            className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
           >
-            Reset Data
+            Clear
           </button>
         </div>
       </SectionCard>

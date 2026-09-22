@@ -313,7 +313,7 @@ export function CustomersPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-end gap-2 flex-wrap">
         <div className="flex-1">
           <CustomerFilters
             search={search}
