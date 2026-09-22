@@ -1,3 +1,5 @@
+// TODO: move to backend — backend should return lead.score (0-100) computed from value/status/source.
+// Remove this file once GET /leads returns a `score` field.
 import type { Lead } from '@/types/lead'
 
 export function computeLeadScore(lead: Lead): number {

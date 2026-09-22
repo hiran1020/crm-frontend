@@ -1,3 +1,6 @@
+// TODO: move to backend — backend should return customer.healthScore computed from
+// activity recency, deal stage, open critical tickets, and customer status.
+// Remove this file once GET /customers/:id returns a `healthScore` field.
 import type { Activity } from '@/types/activity'
 import type { Deal } from '@/types/deal'
 import type { Ticket } from '@/types/ticket'

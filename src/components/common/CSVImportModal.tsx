@@ -1,6 +1,7 @@
-import { UploadCloud, X, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
+import { UploadCloud, X, CheckCircle, AlertTriangle, XCircle, Download } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { parseCSV } from '@/lib/csv'
+import { downloadImportErrors } from '@/lib/api'
 
 export interface CSVImportModalProps {
   open: boolean
@@ -10,7 +11,7 @@ export interface CSVImportModalProps {
     rows: Record<string, string>[],
     mapping: Record<string, string>,
     onProgress: (done: number, total: number) => void,
-  ) => Promise<{ imported: number; skipped: number; errors: string[] }>
+  ) => Promise<{ imported: number; skipped: number; errors: string[]; jobId?: string }>
 }
 
 const CUSTOMER_FIELDS = [
@@ -78,7 +79,8 @@ export function CSVImportModal({ open, entityType, onClose, onImport }: CSVImpor
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [progressTotal, setProgressTotal] = useState(0)
-  const [result, setResult] = useState<{ imported: number; skipped: number; errors: string[] } | null>(null)
+  const [result, setResult] = useState<{ imported: number; skipped: number; errors: string[]; jobId?: string } | null>(null)
+  const [downloading, setDownloading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const crmFields = entityType === 'customer' ? CUSTOMER_FIELDS : LEAD_FIELDS
@@ -94,7 +96,7 @@ export function CSVImportModal({ open, entityType, onClose, onImport }: CSVImpor
   useEffect(() => {
     if (!open) {
       setStep(1); setHeaders([]); setPreviewRows([]); setAllRows([])
-      setMapping({}); setResult(null); setProgress(0); setProgressTotal(0)
+      setMapping({}); setResult(null); setProgress(0); setProgressTotal(0); setDownloading(false)
     }
   }, [open])
 
@@ -387,11 +389,28 @@ export function CSVImportModal({ open, entityType, onClose, onImport }: CSVImpor
                 )}
                 {result.errors.length > 0 && (
                   <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                    <div className="mb-2 flex items-center gap-2">
-                      <XCircle className="h-5 w-5 shrink-0 text-red-600" aria-hidden />
-                      <p className="text-sm font-semibold text-red-900">
-                        {result.errors.length} error{result.errors.length !== 1 ? 's' : ''}
-                      </p>
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <XCircle className="h-5 w-5 shrink-0 text-red-600" aria-hidden />
+                        <p className="text-sm font-semibold text-red-900">
+                          {result.errors.length} error{result.errors.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      {result.jobId && (
+                        <button
+                          type="button"
+                          disabled={downloading}
+                          onClick={() => {
+                            setDownloading(true)
+                            downloadImportErrors(result.jobId!)
+                              .finally(() => setDownloading(false))
+                          }}
+                          className="flex items-center gap-1.5 rounded-md border border-red-300 bg-white px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                        >
+                          <Download className="h-3.5 w-3.5" aria-hidden />
+                          {downloading ? 'Downloading…' : 'Download error log'}
+                        </button>
+                      )}
                     </div>
                     <ul className="space-y-1">
                       {result.errors.slice(0, 5).map((err, i) => (

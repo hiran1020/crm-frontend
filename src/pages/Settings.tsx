@@ -444,6 +444,151 @@ export function SettingsPage() {
         )}
       </SectionCard>
 
+
+      {/* ── Tags ─────────────────────────────────────────────────────────────── */}
+      <SectionCard
+        title="Tags"
+        description="Colour-coded labels attached to customers and leads for quick filtering."
+      >
+        <div className="space-y-2">
+          {tags.length === 0 && (
+            <p className="text-sm text-slate-400">No tags yet. Create one below.</p>
+          )}
+          {tags.map((tag) =>
+            editingTagId === tag.id ? (
+              <div key={tag.id} className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={editingTagColor}
+                  onChange={(e) => setEditingTagColor(e.target.value)}
+                  className="h-7 w-8 cursor-pointer rounded border border-border p-0"
+                  aria-label="Tag colour"
+                />
+                <input
+                  ref={editNameRef}
+                  type="text"
+                  value={editingTagName}
+                  onChange={(e) => setEditingTagName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (!editingTagName.trim()) return
+                      void updateTag
+                        .mutateAsync({ id: tag.id, name: editingTagName.trim(), color: editingTagColor })
+                        .then(() => setEditingTagId(null))
+                    } else if (e.key === 'Escape') {
+                      setEditingTagId(null)
+                    }
+                  }}
+                  className="h-7 flex-1 rounded-md border border-brand-400 px-2 text-sm outline-none focus:ring-2 focus:ring-brand-200"
+                  aria-label="Tag name"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!editingTagName.trim()) return
+                    void updateTag
+                      .mutateAsync({ id: tag.id, name: editingTagName.trim(), color: editingTagColor })
+                      .then(() => setEditingTagId(null))
+                  }}
+                  disabled={updateTag.isPending}
+                  className="rounded-md bg-brand-600 px-3 py-1 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditingTagId(null)}
+                  className="rounded-md border border-border px-3 py-1 text-xs text-slate-600 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div key={tag.id} className="flex items-center gap-2">
+                <span
+                  className="h-5 w-5 shrink-0 rounded-full border border-black/10"
+                  style={{ background: tag.color ?? '#6366f1' }}
+                  aria-hidden
+                />
+                <span className="flex-1 text-sm text-slate-800">{tag.name}</span>
+                {canManageTags && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingTagId(tag.id)
+                        setEditingTagName(tag.name)
+                        setEditingTagColor(tag.color ?? '#6366f1')
+                        setTimeout(() => editNameRef.current?.focus(), 0)
+                      }}
+                      className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                      aria-label={`Edit ${tag.name}`}
+                    >
+                      <Pencil className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!confirm(`Delete tag "${tag.name}"?`)) return
+                        void deleteTag
+                          .mutateAsync(tag.id)
+                          .then(() => notify(`Tag "${tag.name}" deleted`))
+                      }}
+                      disabled={deleteTag.isPending}
+                      className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                      aria-label={`Delete ${tag.name}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                    </button>
+                  </>
+                )}
+              </div>
+            ),
+          )}
+        </div>
+        {canManageTags && (
+          <form
+            className="mt-4 flex items-center gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (!newTagName.trim()) return
+              void createTag
+                .mutateAsync({ name: newTagName.trim(), color: newTagColor })
+                .then(() => {
+                  setNewTagName('')
+                  setNewTagColor('#6366f1')
+                  notify('Tag created')
+                })
+                .catch(() => notify('Could not create tag', 'error'))
+            }}
+          >
+            <input
+              type="color"
+              value={newTagColor}
+              onChange={(e) => setNewTagColor(e.target.value)}
+              className="h-7 w-8 cursor-pointer rounded border border-border p-0"
+              aria-label="New tag colour"
+            />
+            <input
+              type="text"
+              value={newTagName}
+              onChange={(e) => setNewTagName(e.target.value)}
+              placeholder="New tag name\u2026"
+              className="h-8 flex-1 rounded-md border border-border px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+              aria-label="New tag name"
+            />
+            <button
+              type="submit"
+              disabled={!newTagName.trim() || createTag.isPending}
+              className="inline-flex items-center gap-1.5 rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              Add tag
+            </button>
+          </form>
+        )}
+      </SectionCard>
+
       {/* Permissions Matrix */}
       <SectionCard
         title="Permissions"

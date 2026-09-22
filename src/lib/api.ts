@@ -69,3 +69,63 @@ export const api = {
   put: <T>(path: string, body?: unknown) => request<T>('PUT', path, body),
   delete: <T = void>(path: string) => request<T>('DELETE', path),
 }
+
+// ─── Bulk import ─────────────────────────────────────────────────────────────
+
+export interface BulkImportError {
+  index: number
+  identifier: string
+  message: string
+}
+
+interface JobSnapshot {
+  jobId: string
+  total: number
+  processed: number
+  succeeded: number
+  failed: number
+  errors: BulkImportError[]
+  status: 'running' | 'done'
+}
+
+export async function startBulkImport(
+  resource: string,
+  records: Record<string, unknown>[],
+  onProgress: (done: number, total: number) => void,
+): Promise<{ jobId: string; succeeded: number; failed: number; errors: BulkImportError[] }> {
+  const { jobId } = await api.post<{ jobId: string; total: number }>('/bulk-import', { resource, records })
+
+  return new Promise((resolve, reject) => {
+    const poll = async () => {
+      try {
+        const snap = await api.get<JobSnapshot>(`/bulk-import/${jobId}`)
+        onProgress(snap.processed, snap.total)
+        if (snap.status === 'done') {
+          resolve({ jobId, succeeded: snap.succeeded, failed: snap.failed, errors: snap.errors })
+          return
+        }
+        setTimeout(() => void poll(), 400)
+      } catch (err) {
+        reject(err)
+      }
+    }
+    void poll()
+  })
+}
+
+export async function downloadImportErrors(jobId: string): Promise<void> {
+  const token = await getToken()
+  const res = await fetch(`${BASE}/bulk-import/${jobId}/errors.csv`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) throw new Error('Failed to download error log')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `import-errors-${jobId}.csv`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}

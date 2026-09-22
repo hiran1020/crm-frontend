@@ -1,14 +1,32 @@
-import { delay } from '@/lib/delay'
-import { attachmentStore } from '@/mock/attachmentStore'
-import type { Attachment, AttachmentInput } from '@/types/attachment'
+import { api, uploadFile } from '@/lib/api'
+import type { Attachment } from '@/types/attachment'
 
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = () => reject(new Error('Failed to read file'))
-    reader.readAsDataURL(file)
-  })
+interface ApiAttachment {
+  id: string
+  filename?: string
+  mimetype?: string
+  size?: number
+  url?: string
+  entityType?: string
+  entityId?: string
+  uploadedBy?: string
+  createdAt?: string
+  description?: string
+}
+
+function fromApi(d: ApiAttachment): Attachment {
+  return {
+    id: d.id,
+    name: d.filename ?? '',
+    size: d.size ?? 0,
+    mimeType: d.mimetype ?? 'application/octet-stream',
+    dataUrl: d.url,
+    relatedTo: d.entityId ?? '',
+    relatedType: (d.entityType as Attachment['relatedType']) ?? 'customer',
+    uploadedBy: d.uploadedBy ?? '',
+    uploadedAt: d.createdAt ?? new Date().toISOString(),
+    description: d.description,
+  }
 }
 
 export const attachmentService = {
@@ -16,39 +34,29 @@ export const attachmentService = {
     relatedTo: string,
     relatedType: 'customer' | 'lead' | 'deal',
   ): Promise<Attachment[]> {
-    await delay(350)
-    return attachmentStore.getByRelated(relatedTo, relatedType)
+    const res = await api.get<{ data: ApiAttachment[] }>(
+      `/attachments?entityId=${relatedTo}&entityType=${relatedType}&pageSize=100`,
+    )
+    return res.data.map(fromApi)
   },
 
   async uploadAttachment(
     file: File,
     relatedTo: string,
     relatedType: 'customer' | 'lead' | 'deal',
-    uploadedBy: string,
+    _uploadedBy: string,
     description?: string,
   ): Promise<Attachment> {
-    await delay(500)
-    const MAX_DATA_URL_MB = 5
-    let dataUrl: string | undefined
-    if (file.size <= MAX_DATA_URL_MB * 1024 * 1024) {
-      dataUrl = await readFileAsDataUrl(file)
-    }
-
-    const input: AttachmentInput = {
-      name: file.name,
-      size: file.size,
-      mimeType: file.type || 'application/octet-stream',
-      dataUrl,
-      relatedTo,
-      relatedType,
-      uploadedBy,
-      description,
-    }
-    return attachmentStore.create(input)
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('entityId', relatedTo)
+    formData.append('entityType', relatedType)
+    if (description) formData.append('description', description)
+    const d = (await uploadFile('/attachments', formData)) as ApiAttachment
+    return fromApi(d)
   },
 
   async deleteAttachment(id: string): Promise<void> {
-    await delay(350)
-    attachmentStore.remove(id)
+    await api.delete(`/attachments/${id}`)
   },
 }

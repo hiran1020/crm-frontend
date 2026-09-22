@@ -68,6 +68,8 @@ function toApi(input: Partial<QuoteInput>): Record<string, unknown> {
     unitPrice: li.unitPrice,
     total: li.total,
   }))
+  // TODO: move to backend — backend should derive subtotal/total from lineItems + tax + discount.
+  // Remove once POST/PATCH /quotes no longer requires these fields from the client.
   const subtotal = lineItems.reduce((sum, li) => sum + li.total, 0)
   const discount = input.discountAmount ?? 0
   const taxRate = input.tax ?? 0

@@ -12,6 +12,7 @@ import { LeadFilters } from '@/components/leads/LeadFilters'
 import { LeadFormModal } from '@/components/leads/LeadFormModal'
 import { LeadTable, LeadTableSkeleton } from '@/components/leads/LeadTable'
 import { downloadCsv } from '@/lib/csv'
+import { startBulkImport } from '@/lib/api'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
   useBulkDeleteLeads,
@@ -21,10 +22,9 @@ import {
   useLeads,
   useUpdateLead,
 } from '@/hooks/useLeads'
-import { useUsers } from '@/hooks/useUsers'
 import { leadService } from '@/services/leadService'
 import type { LeadFormValues } from '@/schemas/lead'
-import type { Lead, LeadInput, LeadStatus } from '@/types/lead'
+import type { Lead, LeadStatus } from '@/types/lead'
 
 type LeadSortField = 'name' | 'company' | 'value' | 'status' | 'createdAt'
 type SortDirection = 'asc' | 'desc'
@@ -67,7 +67,6 @@ export function LeadsPage() {
 
   const leadsQuery = useLeads(listParams)
   const ownersQuery = useLeadOwners()
-  const { data: users = [] } = useUsers()
   const createLead = useCreateLead()
   const updateLead = useUpdateLead()
   const deleteLead = useDeleteLead()
@@ -250,66 +249,36 @@ export function LeadsPage() {
     rows: Record<string, string>[],
     mapping: Record<string, string>,
     onProgress: (done: number, total: number) => void,
-  ): Promise<{ imported: number; skipped: number; errors: string[] }> {
-    let imported = 0
-    let skipped = 0
-    const errors: string[] = []
-
-    const VALID_SOURCES = ['Website', 'Referral', 'Trade Show', 'Cold Call', 'Email Campaign', 'Social Media', 'Partner']
+  ): Promise<{ imported: number; skipped: number; errors: string[]; jobId?: string }> {
+    const VALID_SOURCES = ['Website', 'Referral', 'Trade_Show', 'Cold_Call', 'Email_Campaign', 'Social_Media', 'Partner']
     const VALID_STATUSES = ['New', 'Contacted', 'Qualified', 'Lost', 'Converted']
 
-    for (let i = 0; i < rows.length; i++) {
-      onProgress(i, rows.length)
-      const row = rows[i]
-      try {
-        const mapped: Partial<LeadInput> = {}
-        for (const [csvCol, crmField] of Object.entries(mapping)) {
-          if (crmField === '__skip__') continue
-          const val = row[csvCol] ?? ''
-          if (crmField === 'name') mapped.name = val
-          else if (crmField === 'company') mapped.company = val
-          else if (crmField === 'email') mapped.email = val
-          else if (crmField === 'phone') mapped.phone = val
-          else if (crmField === 'source') mapped.source = VALID_SOURCES.includes(val) ? val as LeadInput['source'] : 'Website'
-          else if (crmField === 'value') mapped.value = parseFloat(val) || 0
-          else if (crmField === 'owner') mapped.owner = val || ''
-          else if (crmField === 'status') mapped.status = VALID_STATUSES.includes(val) ? val as LeadInput['status'] : 'New'
-          else if (crmField === 'notes') mapped.notes = val
-        }
-
-        if (!mapped.email) { skipped++; onProgress(i + 1, rows.length); continue }
-
-        const existing = await leadService.findByEmail(mapped.email)
-        if (existing) { skipped++; onProgress(i + 1, rows.length); continue }
-
-        const ownerName = mapped.owner ?? ''
-        const matchedUser = users.find((u) => u.name === ownerName)
-        await createLead.mutateAsync({
-          name: mapped.name ?? '',
-          company: mapped.company ?? '',
-          email: mapped.email,
-          phone: mapped.phone ?? '',
-          source: mapped.source ?? 'Website',
-          status: mapped.status ?? 'New',
-          value: mapped.value ?? 0,
-          owner: ownerName,
-          ownerId: matchedUser?.id ?? '',
-          notes: mapped.notes ?? '',
-          tags: [],
-        })
-        imported++
-      } catch (err) {
-        errors.push(err instanceof Error ? err.message : 'Unknown error')
+    const records = rows.map(row => {
+      const mapped: Record<string, unknown> = {}
+      for (const [csvCol, crmField] of Object.entries(mapping)) {
+        if (crmField === '__skip__') continue
+        const val = row[csvCol] ?? ''
+        if (crmField === 'value') mapped.value = parseFloat(val) || 0
+        else if (crmField === 'source') mapped.source = VALID_SOURCES.includes(val) ? val : 'Website'
+        else if (crmField === 'status') mapped.status = VALID_STATUSES.includes(val) ? val : 'New'
+        else if (crmField !== 'owner') mapped[crmField] = val
       }
-      onProgress(i + 1, rows.length)
-    }
+      return mapped
+    })
 
-    if (imported > 0) {
-      notify(`Imported ${imported} lead${imported !== 1 ? 's' : ''}`, 'success')
+    const result = await startBulkImport('leads', records, onProgress)
+
+    if (result.succeeded > 0) {
+      notify(`Imported ${result.succeeded} lead${result.succeeded !== 1 ? 's' : ''}`, 'success')
       resetToFirstPage()
     }
 
-    return { imported, skipped, errors }
+    return {
+      imported: result.succeeded,
+      skipped: 0,
+      errors: result.errors.map(e => `Row ${e.index + 1} (${e.identifier}): ${e.message}`),
+      jobId: result.jobId,
+    }
   }
 
   return (

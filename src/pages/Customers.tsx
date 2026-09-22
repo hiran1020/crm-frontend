@@ -16,6 +16,7 @@ import {
   CustomerTableSkeleton,
 } from '@/components/customers/CustomerTable'
 import { downloadCsv } from '@/lib/csv'
+import { startBulkImport } from '@/lib/api'
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import {
   useBulkDeleteCustomers,
@@ -25,12 +26,10 @@ import {
   useDeleteCustomer,
   useUpdateCustomer,
 } from '@/hooks/useCustomers'
-import { useUsers } from '@/hooks/useUsers'
 import { customerService } from '@/services/customerService'
 import type { CustomerFormValues } from '@/schemas/customer'
 import type {
   Customer,
-  CustomerInput,
   CustomerSortField,
   CustomerStatus,
   SortDirection,
@@ -75,7 +74,6 @@ export function CustomersPage() {
 
   const customersQuery = useCustomers(listParams)
   const ownersQuery = useCustomerOwners()
-  const { data: users = [] } = useUsers()
   const createCustomer = useCreateCustomer()
   const updateCustomer = useUpdateCustomer()
   const deleteCustomer = useDeleteCustomer()
@@ -236,60 +234,31 @@ export function CustomersPage() {
     rows: Record<string, string>[],
     mapping: Record<string, string>,
     onProgress: (done: number, total: number) => void,
-  ): Promise<{ imported: number; skipped: number; errors: string[] }> {
-    let imported = 0
-    let skipped = 0
-    const errors: string[] = []
-
-    for (let i = 0; i < rows.length; i++) {
-      onProgress(i, rows.length)
-      const row = rows[i]
-      try {
-        const mapped: Partial<CustomerInput> = {}
-        for (const [csvCol, crmField] of Object.entries(mapping)) {
-          if (crmField === '__skip__') continue
-          const val = row[csvCol] ?? ''
-          if (crmField === 'firstName') mapped.firstName = val
-          else if (crmField === 'lastName') mapped.lastName = val
-          else if (crmField === 'email') mapped.email = val
-          else if (crmField === 'phone') mapped.phone = val
-          else if (crmField === 'company') mapped.company = val
-          else if (crmField === 'jobTitle') mapped.jobTitle = val
-          else if (crmField === 'status') mapped.status = (val === 'Inactive' ? 'Inactive' : 'Active')
-          else if (crmField === 'owner') mapped.owner = val || ''
-        }
-
-        if (!mapped.email) { skipped++; onProgress(i + 1, rows.length); continue }
-
-        const existing = await customerService.findByEmail(mapped.email)
-        if (existing) { skipped++; onProgress(i + 1, rows.length); continue }
-
-        const ownerName = mapped.owner ?? ''
-        const matchedUser = users.find((u) => u.name === ownerName)
-        await createCustomer.mutateAsync({
-          firstName: mapped.firstName ?? '',
-          lastName: mapped.lastName ?? '',
-          email: mapped.email,
-          phone: mapped.phone ?? '',
-          company: mapped.company ?? '',
-          jobTitle: mapped.jobTitle ?? '',
-          status: mapped.status ?? 'Active',
-          owner: ownerName,
-          ownerId: matchedUser?.id ?? '',
-        })
-        imported++
-      } catch (err) {
-        errors.push(err instanceof Error ? err.message : 'Unknown error')
+  ): Promise<{ imported: number; skipped: number; errors: string[]; jobId?: string }> {
+    const records = rows.map(row => {
+      const mapped: Record<string, unknown> = {}
+      for (const [csvCol, crmField] of Object.entries(mapping)) {
+        if (crmField === '__skip__') continue
+        const val = row[csvCol] ?? ''
+        if (crmField === 'status') mapped.status = val === 'Inactive' ? 'Inactive' : 'Active'
+        else if (crmField !== 'owner') mapped[crmField] = val
       }
-      onProgress(i + 1, rows.length)
-    }
+      return mapped
+    })
 
-    if (imported > 0) {
-      notify(`Imported ${imported} customer${imported !== 1 ? 's' : ''}`, 'success')
+    const result = await startBulkImport('customers', records, onProgress)
+
+    if (result.succeeded > 0) {
+      notify(`Imported ${result.succeeded} customer${result.succeeded !== 1 ? 's' : ''}`, 'success')
       resetToFirstPage()
     }
 
-    return { imported, skipped, errors }
+    return {
+      imported: result.succeeded,
+      skipped: 0,
+      errors: result.errors.map(e => `Row ${e.index + 1} (${e.identifier}): ${e.message}`),
+      jobId: result.jobId,
+    }
   }
 
   return (

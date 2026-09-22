@@ -1,35 +1,56 @@
-import { delay } from '@/lib/delay'
-import { savedViewStore } from '@/mock/savedViewStore'
+import { api } from '@/lib/api'
 import type { SavedView, SavedViewEntity } from '@/types/savedView'
+
+interface ApiSavedView {
+  id: string
+  name?: string
+  entityType?: string
+  filters?: Record<string, string>
+  createdBy?: string
+  createdAt?: string
+  isDefault?: boolean
+}
+
+function fromApi(d: ApiSavedView): SavedView {
+  return {
+    id: d.id,
+    name: d.name ?? '',
+    entityType: (d.entityType as SavedView['entityType']) ?? 'customer',
+    filters: d.filters ?? {},
+    createdBy: d.createdBy ?? '',
+    createdAt: d.createdAt ?? new Date().toISOString(),
+    isDefault: d.isDefault ?? false,
+  }
+}
 
 export const savedViewService = {
   async getAll(): Promise<SavedView[]> {
-    await delay(200)
-    return savedViewStore.getAll()
+    const res = await api.get<{ data: ApiSavedView[] }>('/saved-views?pageSize=200')
+    return res.data.map(fromApi)
   },
 
   async getByEntity(entityType: SavedViewEntity): Promise<SavedView[]> {
-    await delay(200)
-    return savedViewStore.getByEntity(entityType)
+    const res = await api.get<{ data: ApiSavedView[] }>(
+      `/saved-views?entityType=${entityType}&pageSize=200`,
+    )
+    return res.data.map(fromApi)
   },
 
   async create(input: Omit<SavedView, 'id' | 'createdAt'>): Promise<SavedView> {
-    await delay(400)
-    return savedViewStore.create(input)
+    const d = await api.post<ApiSavedView>('/saved-views', input)
+    return fromApi(d)
   },
 
   async update(id: string, input: Partial<SavedView>): Promise<SavedView> {
-    await delay(400)
-    return savedViewStore.update(id, input)
+    const d = await api.patch<ApiSavedView>(`/saved-views/${id}`, input)
+    return fromApi(d)
   },
 
   async remove(id: string): Promise<void> {
-    await delay(300)
-    savedViewStore.remove(id)
+    await api.delete(`/saved-views/${id}`)
   },
 
   async setDefault(id: string, entityType: SavedViewEntity): Promise<void> {
-    await delay(300)
-    savedViewStore.setDefault(id, entityType)
+    await api.patch(`/saved-views/${id}`, { isDefault: true, entityType })
   },
 }
