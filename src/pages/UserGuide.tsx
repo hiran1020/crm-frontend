@@ -660,7 +660,7 @@ export function UserGuidePage() {
 
           <h3 className="font-semibold text-slate-900">Workspace pre-configured</h3>
           <div className="rounded-lg border border-border bg-slate-50 p-4 text-sm">
-            <p><span className="font-medium">Workspace:</span> FleetPanda · ID <code className="bg-slate-200 px-1 rounded">8447923</code></p>
+            <p><span className="font-medium">Workspace:</span> Your ClickUp workspace · ID <code className="bg-slate-200 px-1 rounded">8447923</code></p>
             <p className="mt-1"><span className="font-medium">Default list:</span> Fixes and Improvements (Eng space)</p>
             <p className="mt-1"><span className="font-medium">Dev workflow:</span> to do → in progress → dev testing → pull request → QA → done</p>
           </div>

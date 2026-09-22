@@ -285,7 +285,7 @@ export function ReportsPage() {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Reports</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Visual insights into your sales pipeline and performance.
+            Visual insights into your fuel contract pipeline and account performance.
           </p>
         </div>
         <button

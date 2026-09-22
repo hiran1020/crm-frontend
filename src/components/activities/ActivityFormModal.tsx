@@ -28,7 +28,7 @@ interface ActivityFormModalProps {
 const TYPE_LABELS: Record<ActivityType, string> = {
   call: 'Phone Call',
   email: 'Email',
-  meeting: 'Meeting',
+  meeting: 'Site Visit',
   note: 'Note',
   task: 'Task',
 }
@@ -121,7 +121,7 @@ export function ActivityFormModal({
           </p>
         ) : (
           <p className="mt-1 text-sm text-slate-500">
-            Record a call, email, meeting, note, or task.
+            Record a phone call, email, site visit, note, or task.
           </p>
         )}
 

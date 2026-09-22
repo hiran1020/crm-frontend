@@ -131,7 +131,7 @@ export function HelpdeskPage() {
           </div>
           <div>
             <h2 className="text-xl font-semibold text-slate-900">Help Desk</h2>
-            <p className="text-sm text-slate-500">Track and resolve customer support requests.</p>
+            <p className="text-sm text-slate-500">Track and resolve support requests from fuel accounts — delivery issues, billing disputes, and equipment faults.</p>
           </div>
         </div>
         <button type="button" onClick={openCreate}

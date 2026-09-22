@@ -91,7 +91,7 @@ export function LeadFormModal({
           {isEdit ? 'Edit lead' : 'Add lead'}
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          {isEdit ? 'Update lead details and status.' : 'Create a new lead record.'}
+          {isEdit ? 'Update fuel prospect details and status.' : 'Add a new fuel industry prospect.'}
         </p>
 
         <form
@@ -109,11 +109,11 @@ export function LeadFormModal({
           }}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Name" error={errors.name?.message}>
-              <input {...register('name')} className={inputClass(errors.name)} autoComplete="name" autoFocus />
+            <Field label="Contact Name" error={errors.name?.message}>
+              <input {...register('name')} className={inputClass(errors.name)} autoComplete="name" autoFocus placeholder="Decision maker's name" />
             </Field>
             <Field label="Company" error={errors.company?.message}>
-              <input {...register('company')} className={inputClass(errors.company)} autoComplete="organization" />
+              <input {...register('company')} className={inputClass(errors.company)} autoComplete="organization" placeholder="Fleet operator, trucking co., municipality…" />
             </Field>
           </div>
 
@@ -130,14 +130,14 @@ export function LeadFormModal({
               <select {...register('source')} className={inputClass(errors.source)}>
                 <option value="Website">Website</option>
                 <option value="Referral">Referral</option>
-                <option value="Trade Show">Trade Show</option>
-                <option value="Cold Call">Cold Call</option>
+                <option value="Trade Show">Industry Event</option>
+                <option value="Cold Call">Cold Outreach</option>
                 <option value="Email Campaign">Email Campaign</option>
                 <option value="Social Media">Social Media</option>
-                <option value="Partner">Partner</option>
+                <option value="Partner">Fleet Association</option>
               </select>
             </Field>
-            <Field label="Estimated value ($)" error={errors.value?.message}>
+            <Field label="Estimated contract value ($)" error={errors.value?.message}>
               <input
                 type="number" min="0" step="100"
                 {...register('value', { valueAsNumber: true })}
@@ -177,6 +177,7 @@ export function LeadFormModal({
           <Field label="Notes" error={errors.notes?.message}>
             <textarea
               {...register('notes')} rows={3}
+              placeholder="Fleet size, fuel type, current supplier, estimated monthly volume…"
               className={[inputClass(errors.notes), 'h-auto resize-none py-2'].join(' ')}
             />
           </Field>

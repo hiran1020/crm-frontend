@@ -6,6 +6,8 @@ export type TicketCategory =
   | 'Billing'
   | 'Technical Support'
   | 'General Inquiry'
+  | 'Delivery Issue'
+  | 'Fuel Quality'
 
 export interface TicketComment {
   id: string

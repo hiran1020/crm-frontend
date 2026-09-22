@@ -1,10 +1,10 @@
 /**
  * ClickUp integration configuration — stored in localStorage.
  *
- * Workspace details discovered from the FleetPanda ClickUp workspace:
+ * Workspace details for the connected ClickUp workspace:
  *   Workspace ID : 8447923
  *   Default list : "Fixes and Improvements"  (ID: 900700247859)
- *   List URL     : https://app.clickup.com/8447923/v/l/li/900700247859
+ *   List URL     : https://app.clickup.com/8447923
  */
 
 export interface ClickUpConfig {

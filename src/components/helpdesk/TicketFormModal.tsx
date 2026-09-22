@@ -41,7 +41,7 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
     resolver: zodResolver(ticketFormSchema) as Resolver<TicketFormValues>,
     defaultValues: {
       title: '', description: '', status: 'Open', priority: 'Medium',
-      category: 'General Inquiry', assignedTo: '', assigneeId: '',
+      category: 'Delivery Issue', assignedTo: '', assigneeId: '',
       customerId: '', customerName: '', createdBy: '',
     },
     mode: 'onBlur',
@@ -64,7 +64,7 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
       const defaultUser = users.find((u) => u.id === user?.id) ?? users[0]
       reset({
         title: '', description: '', status: 'Open', priority: 'Medium',
-        category: 'General Inquiry',
+        category: 'Delivery Issue',
         assignedTo: defaultUser?.name ?? '',
         assigneeId: defaultUser?.id ?? '',
         customerId: '', customerName: '',
@@ -126,11 +126,12 @@ export function TicketFormModal({ open, ticket, busy = false, onClose, onSubmit 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Category" error={errors.category?.message}>
               <select {...register('category')} className={cls(errors.category)}>
-                <option value="Bug">Bug</option>
-                <option value="Feature Request">Feature Request</option>
-                <option value="Billing">Billing</option>
-                <option value="Technical Support">Technical Support</option>
-                <option value="General Inquiry">General Inquiry</option>
+                <option value="Delivery Issue">Delivery Issue</option>
+                <option value="Billing">Billing Dispute</option>
+                <option value="Technical Support">Equipment Fault</option>
+                <option value="General Inquiry">Account Setup</option>
+                <option value="Bug">Fuel Quality</option>
+                <option value="Feature Request">Other</option>
               </select>
             </Field>
             <Field label="Assigned to" error={errors.assignedTo?.message}>

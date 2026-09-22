@@ -34,9 +34,9 @@ export function ActivityFilters({
           className="h-10 min-w-36 rounded-md border border-border bg-white px-3 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
         >
           <option value="All">All types</option>
-          <option value="call">Call</option>
+          <option value="call">Phone Call</option>
           <option value="email">Email</option>
-          <option value="meeting">Meeting</option>
+          <option value="meeting">Site Visit</option>
           <option value="note">Note</option>
           <option value="task">Task</option>
         </select>

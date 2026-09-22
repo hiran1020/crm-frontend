@@ -16,7 +16,7 @@ import type { Activity, ActivityType } from '@/types/activity'
 const TYPE_META: Record<ActivityType, { icon: typeof Phone; color: string; bg: string; label: string }> = {
   call:    { icon: Phone,       color: 'text-blue-600',   bg: 'bg-blue-50',   label: 'Phone Call'  },
   email:   { icon: Mail,        color: 'text-emerald-600',bg: 'bg-emerald-50',label: 'Email'       },
-  meeting: { icon: Users,       color: 'text-purple-600', bg: 'bg-purple-50', label: 'Meeting'     },
+  meeting: { icon: Users,       color: 'text-purple-600', bg: 'bg-purple-50', label: 'Site Visit'  },
   note:    { icon: FileText,    color: 'text-yellow-600', bg: 'bg-yellow-50', label: 'Note'        },
   task:    { icon: CheckSquare, color: 'text-orange-600', bg: 'bg-orange-50', label: 'Task'        },
 }

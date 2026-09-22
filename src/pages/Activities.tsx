@@ -85,7 +85,7 @@ export function ActivitiesPage() {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Activities</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Log and track every interaction with customers, leads, and deals.
+            Log and track every interaction with fuel accounts, prospects, and contracts.
           </p>
         </div>
         <button

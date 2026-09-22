@@ -170,7 +170,7 @@ export function ClickUpSettingsPanel() {
       {/* Pre-filled workspace info */}
       <div className="rounded-lg border border-border bg-slate-50 p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">
-          FleetPanda Workspace (pre-configured)
+          ClickUp Workspace (pre-configured)
         </p>
         <div className="space-y-1 text-xs text-slate-600">
           <p><span className="font-medium">Workspace:</span> CRM PURSE · ID <code className="bg-slate-200 px-1 rounded">8447923</code></p>

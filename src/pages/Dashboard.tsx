@@ -70,7 +70,7 @@ export function DashboardPage() {
   if (!data) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-white p-10 text-center text-slate-500">
-        No dashboard data yet.
+        No data yet — add your first fuel account or contract to get started.
       </div>
     )
   }
@@ -87,27 +87,27 @@ export function DashboardPage() {
       {/* Stat cards — clickable, navigate to relevant pages */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          label="Total customers"
+          label="Fuel Accounts"
           value={String(stats.totalCustomers)}
           hint="Click to view all →"
           onClick={() => navigate('/customers')}
         />
         <StatCard
-          label="New leads"
+          label="Fuel Prospects"
           value={String(stats.totalLeads)}
           hint="Click to view all →"
           onClick={() => navigate('/leads')}
         />
         <StatCard
-          label="Open deals"
+          label="Open Contracts"
           value={String(stats.openDeals)}
           hint="Click to view pipeline →"
           onClick={() => navigate('/deals')}
         />
         <StatCard
-          label="Pipeline revenue"
+          label="Pipeline Value"
           value={formatCurrency(stats.totalRevenue)}
-          hint="Active + negotiation deals"
+          hint="Active + negotiation contracts"
         />
       </div>
 
@@ -115,12 +115,12 @@ export function DashboardPage() {
       <section className="rounded-lg border border-border bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-slate-900">Revenue Forecast</h2>
         <p className="mt-1 text-xs text-slate-500">
-          Won deals, weighted pipeline, and best-case scenario
+          Closed contracts, weighted pipeline, and best-case fuel revenue
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-600">
-              Committed (Won)
+              Closed Revenue
             </p>
             <p className="mt-1 text-2xl font-bold text-emerald-700">
               {formatCurrency(forecast.won)}
@@ -151,10 +151,10 @@ export function DashboardPage() {
       <div className="grid gap-6 xl:grid-cols-3">
         <section className="rounded-lg border border-border bg-white p-5 shadow-sm xl:col-span-2">
           <h2 className="text-sm font-semibold text-slate-900">
-            Sales pipeline
+            Contract Pipeline
           </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Deal value by stage — see Reports for full breakdown
+            Fuel contract value by stage — see Reports for full breakdown
           </p>
           <div className="mt-4">
             <PipelineChart data={pipeline} />
@@ -293,7 +293,7 @@ export function DashboardPage() {
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs text-slate-500">Deals Won</p>
+                    <p className="text-xs text-slate-500">Contracts Won</p>
                     <p className="mt-0.5 text-lg font-semibold text-emerald-700">{member.dealsWon}</p>
                   </div>
                   <div>
@@ -301,7 +301,7 @@ export function DashboardPage() {
                     <p className="mt-0.5 text-lg font-semibold text-slate-900">{formatCurrency(member.revenue)}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500">Leads Converted</p>
+                    <p className="text-xs text-slate-500">Prospects Converted</p>
                     <p className="mt-0.5 text-lg font-semibold text-slate-900">{member.leadsConverted}</p>
                   </div>
                   <div>

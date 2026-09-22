@@ -10,9 +10,9 @@ import { formatCurrency } from '@/lib/format'
 import type { SalesGoal, GoalMetric, GoalPeriod } from '@/types/salesGoal'
 
 const METRIC_LABELS: Record<GoalMetric, string> = {
-  revenue: 'Revenue',
-  deals_won: 'Deals Won',
-  leads_converted: 'Leads Converted',
+  revenue: 'Fuel Revenue',
+  deals_won: 'Contracts Won',
+  leads_converted: 'Prospects Converted',
   activities: 'Activities',
 }
 
@@ -189,7 +189,7 @@ export function SalesGoalsPage() {
         <div>
           <h2 className="text-xl font-semibold text-slate-900">Sales Goals</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Track progress toward team and individual sales targets.
+            Track fuel revenue targets, contracts won, and team performance goals.
           </p>
         </div>
         <button

@@ -26,52 +26,52 @@ const SMART_LIST_DEFS: SmartListDefinition[] = [
   },
   {
     id: 'stale-deals',
-    name: 'Stale Deals',
-    description: 'Deals not updated in 14+ days.',
+    name: 'Stalled Fuel Contracts',
+    description: 'Fuel contracts with no activity in 14+ days.',
     emoji: '🕰️',
     targetPath: '/deals',
   },
   {
     id: 'hot-leads',
-    name: 'Hot Leads',
-    description: 'Leads with Qualified status.',
+    name: 'Hot Fuel Prospects',
+    description: 'Qualified fuel prospects ready for a proposal.',
     emoji: '🔥',
     targetPath: '/leads',
     targetFilters: { status: 'Qualified' },
   },
   {
     id: 'closing-this-week',
-    name: 'Closing This Week',
-    description: 'Deals with expected close date within 7 days.',
+    name: 'Contracts Closing This Week',
+    description: 'Fuel contracts with an expected close date in the next 7 days.',
     emoji: '📅',
     targetPath: '/deals',
   },
   {
     id: 'new-this-week',
-    name: 'New This Week',
-    description: 'Customers or leads created in the last 7 days.',
+    name: 'New Fuel Leads This Week',
+    description: 'Fuel accounts and leads added in the last 7 days.',
     emoji: '🆕',
     targetPath: '/customers',
   },
   {
     id: 'critical-tickets',
-    name: 'Critical Tickets',
+    name: 'Critical Support Tickets',
     description: 'Open support tickets with Critical priority.',
     emoji: '🚨',
     targetPath: '/helpdesk',
   },
   {
     id: 'inactive-customers',
-    name: 'Inactive Customers',
-    description: 'Customers with no activity in 90+ days.',
+    name: 'Dormant Fuel Accounts',
+    description: 'Fuel accounts with no logged activity in 90+ days.',
     emoji: '😴',
     targetPath: '/customers',
     targetFilters: { status: 'Inactive' },
   },
   {
     id: 'high-value-pipeline',
-    name: 'High Value Pipeline',
-    description: 'Deals worth more than $20,000 in active stages.',
+    name: 'High-Volume Pipeline',
+    description: 'Fuel contracts worth more than $20,000 in active stages.',
     emoji: '💰',
     targetPath: '/deals',
   },
@@ -169,7 +169,7 @@ export function SmartListsPage() {
       <div>
         <h2 className="text-xl font-semibold text-slate-900">Smart Lists</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Automatically maintained lists based on real-time data. Last refreshed at {lastRefreshed}.
+          Auto-maintained views of your fuel accounts, prospects, and contracts. Last refreshed at {lastRefreshed}.
         </p>
       </div>
 

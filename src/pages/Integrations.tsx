@@ -253,8 +253,7 @@ export function IntegrationsPage() {
             <div>
               <p className="font-semibold text-slate-900">ClickUp</p>
               <p className="text-xs text-slate-500">
-                Push Help Desk tickets directly to your ClickUp dev workspace. Configured for{' '}
-                <span className="font-medium">FleetPanda → Eng → Fixes and Improvements</span>.
+                Push Help Desk tickets directly to your ClickUp dev workspace. Configured for your engineering backlog.
               </p>
             </div>
             <div className="ml-auto">
