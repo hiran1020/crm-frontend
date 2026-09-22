@@ -177,12 +177,12 @@ export function AnalyticsPage() {
           <div className="rounded-lg border border-border bg-white p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-slate-900 mb-4">Conversion Funnel</h3>
             <div className="space-y-2">
-              {funnelData.map((item, i) => {
+              {funnelData.map((item) => {
                 const pct = funnelData[0].value > 0
                   ? Math.round((item.value / funnelData[0].value) * 100)
                   : 0
                 return (
-                  <div key={i} className="flex items-center gap-3">
+                  <div key={item.label} className="flex items-center gap-3">
                     <span className="w-28 shrink-0 text-xs text-slate-600">{item.label}</span>
                     <div className="flex-1 h-7 rounded-md bg-slate-100 overflow-hidden">
                       <div
@@ -279,18 +279,18 @@ export function AnalyticsPage() {
                     nameKey="type"
                     cx="50%"
                     cy="50%"
+                    innerRadius={45}
                     outerRadius={70}
-                    label={({ name, percent }) => `${name} ${Math.round((percent ?? 0) * 100)}%`}
-                    labelLine={false}
                   >
-                    {actByType.map((_, i) => (
+                    {actByType.map((entry, i) => (
                       <Cell
-                        key={i}
+                        key={entry.type}
                         fill={['#3b82f6', '#8b5cf6', '#10b981', '#f97316', '#eab308'][i % 5]}
                       />
                     ))}
                   </Pie>
                   <Tooltip contentStyle={tooltipStyle} />
+                  <Legend />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -339,11 +339,11 @@ export function AnalyticsPage() {
       {/* Team Tab */}
       {tab === 'team' && (
         <div className="space-y-6">
-          <div className="rounded-lg border border-border bg-white shadow-sm overflow-hidden">
+          <div className="rounded-lg border border-border bg-white shadow-sm overflow-x-auto">
             <div className="border-b border-border px-5 py-3">
               <h3 className="text-sm font-semibold text-slate-900">Team Leaderboard</h3>
             </div>
-            <table className="min-w-full divide-y divide-border">
+            <table className="min-w-[560px] w-full divide-y divide-border">
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Rank</th>

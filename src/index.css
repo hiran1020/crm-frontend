@@ -124,6 +124,19 @@ html.dark .bg-purple-50   { background-color: rgba(88, 28,  135, 0.35); }
 html.dark .bg-amber-50    { background-color: rgba(78, 50,  0,   0.35); }
 html.dark .bg-pink-50     { background-color: rgba(131,24,  67,  0.35); }
 html.dark .bg-green-50    { background-color: rgba(20, 83,  45,  0.35); }
+
+/* Badge/pill -100 backgrounds — these are used for status chips throughout the app.
+   The default Tailwind -100 colors are very light pastels that wash out on a dark card.
+   Replace them with deeper, less opaque tints that read correctly on dark surfaces. */
+html.dark .bg-emerald-100 { background-color: rgba(6,  78,  59,  0.45); }
+html.dark .bg-blue-100    { background-color: rgba(30, 58,  138, 0.45); }
+html.dark .bg-yellow-100  { background-color: rgba(78, 60,  0,   0.45); }
+html.dark .bg-orange-100  { background-color: rgba(78, 35,  0,   0.45); }
+html.dark .bg-red-100     { background-color: rgba(127,29,  29,  0.45); }
+html.dark .bg-purple-100  { background-color: rgba(88, 28,  135, 0.45); }
+html.dark .bg-amber-100   { background-color: rgba(78, 50,  0,   0.45); }
+html.dark .bg-pink-100    { background-color: rgba(131,24,  67,  0.45); }
+html.dark .bg-green-100   { background-color: rgba(20, 83,  45,  0.45); }
 html.dark .bg-slate-200   { background-color: #253040; }
 
 /* Semantic BORDERS — lighter tints so they show against dark card bg */

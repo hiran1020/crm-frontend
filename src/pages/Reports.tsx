@@ -555,22 +555,21 @@ export function ReportsPage() {
                   const max = topOwners[0].count
                   const pct = max > 0 ? (owner.count / max) * 100 : 0
                   return (
-                    <div key={owner.owner} className="flex items-center gap-3">
+                    <div key={owner.owner} className="flex items-center gap-2">
                       <span className={[
                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold',
                         i === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600',
                       ].join(' ')}>
                         {i + 1}
                       </span>
-                      <span className="w-28 shrink-0 text-xs text-slate-700 truncate">{owner.owner}</span>
-                      <div className="flex-1 h-5 rounded-md bg-slate-100 overflow-hidden">
+                      <span className="w-36 shrink-0 truncate text-xs text-slate-700" title={owner.owner}>{owner.owner || '—'}</span>
+                      <div className="flex-1 h-4 rounded-full bg-slate-100 overflow-hidden">
                         <div
-                          className="h-full rounded-md bg-purple-400 flex items-center px-1.5 text-[10px] font-semibold text-white"
-                          style={{ width: `${pct}%` }}
-                        >
-                          {owner.count}
-                        </div>
+                          className="h-full rounded-full bg-purple-400 transition-all"
+                          style={{ width: `${Math.max(pct, 2)}%` }}
+                        />
                       </div>
+                      <span className="w-8 shrink-0 text-right text-xs font-semibold text-slate-700">{owner.count}</span>
                     </div>
                   )
                 })}

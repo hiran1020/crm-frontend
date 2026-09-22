@@ -215,9 +215,9 @@ export function CalendarPage() {
                     </span>
                     {dayEvents.length > 0 && isCurrentMonth ? (
                       <div className="mt-1 flex flex-wrap gap-0.5">
-                        {showDots.map((event, i) => (
+                        {showDots.map((event) => (
                           <span
-                            key={i}
+                            key={event.id}
                             className={[
                               'h-1.5 w-1.5 rounded-full',
                               TYPE_COLORS[event.type] ?? 'bg-slate-400',

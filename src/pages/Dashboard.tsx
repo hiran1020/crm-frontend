@@ -175,7 +175,9 @@ export function DashboardPage() {
             </button>
           </div>
           <ul className="mt-4 space-y-3">
-            {tasksDueSoon.map((task) => (
+            {tasksDueSoon.length === 0 ? (
+              <li className="text-sm text-slate-400">No tasks due soon.</li>
+            ) : tasksDueSoon.map((task) => (
               <li
                 key={task.id}
                 className="rounded-md border border-border px-3 py-2"
@@ -214,7 +216,9 @@ export function DashboardPage() {
             </button>
           </div>
           <ul className="mt-4 divide-y divide-border">
-            {recentActivities.map((activity) => (
+            {recentActivities.length === 0 ? (
+              <li className="py-3 text-sm text-slate-400">No recent activities.</li>
+            ) : recentActivities.map((activity) => (
               <li key={activity.id} className="py-3">
                 <p className="text-sm text-slate-800">{activity.title}</p>
                 <p className="mt-1 text-xs text-slate-500">
@@ -238,6 +242,9 @@ export function DashboardPage() {
             </button>
           </div>
           <ul className="mt-4 divide-y divide-border">
+            {recentDeals.length === 0 && (
+              <li className="py-3 text-sm text-slate-400">No recent deals.</li>
+            )}
             {recentDeals.map((deal) => (
               <li key={deal.id}>
                 <button

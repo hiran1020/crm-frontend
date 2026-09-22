@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/components/common/ToastProvider'
@@ -262,10 +262,10 @@ export function SalesGoalsPage() {
                         void deleteGoal.mutateAsync(goal.id).then(() => notify('Goal deleted'))
                       }
                     }}
-                    className="text-xs text-red-500 hover:text-red-700"
+                    className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
                     aria-label="Delete goal"
                   >
-                    ×
+                    <Trash2 className="h-4 w-4" aria-hidden />
                   </button>
                 </div>
                 <div>

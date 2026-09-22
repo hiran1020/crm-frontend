@@ -35,9 +35,9 @@ function daysUntil(dateStr: string): number {
 function rowUrgency(renewal: Renewal): string {
   const days = daysUntil(renewal.renewalDate)
   if (renewal.status === 'renewed' || renewal.status === 'churned') return ''
-  if (days < 0) return 'bg-red-50'
-  if (renewal.status === 'at_risk') return 'bg-orange-50'
-  if (days < 30) return 'bg-yellow-50/60'
+  if (days < 0) return 'bg-red-500/10'
+  if (renewal.status === 'at_risk') return 'bg-orange-500/10'
+  if (days < 30) return 'bg-yellow-500/10'
   return ''
 }
 
