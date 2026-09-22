@@ -15,6 +15,20 @@ import {
 import { firebaseAuth } from '@/lib/firebase'
 import type { User, UserRole } from '@/types/user'
 
+const BASE = import.meta.env.VITE_API_URL as string
+
+/** Stamp lastLoginAt on the backend — fire-and-forget, never throws. */
+async function stampLastLogin(getToken: () => Promise<string>) {
+  try {
+    const token = await getToken()
+    void fetch(`${BASE}/api/v1/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch {
+    // non-critical — swallow silently
+  }
+}
+
 interface AuthContextValue {
   user: User | null
   login: (email: string, password: string) => Promise<void>
@@ -56,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatarInitials: makeInitials(name),
       })
       setLoading(false)
+      // Stamp lastLoginAt in Firestore on every session restore
+      void stampLastLogin(() => fbUser.getIdToken())
     })
     return unsub
   }, [])
@@ -72,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role,
       avatarInitials: makeInitials(name),
     })
+    // Stamp lastLoginAt in Firestore on explicit login
+    void stampLastLogin(() => cred.user.getIdToken())
   }, [])
 
   const logout = useCallback(async () => {
