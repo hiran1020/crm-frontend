@@ -324,38 +324,36 @@ export function LeadsPage() {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="flex-1">
-          <LeadFilters
-            search={search}
-            status={status}
-            owner={owner}
-            owners={owners}
-            onSearchChange={(value) => {
-              setSearch(value)
-              resetToFirstPage()
-            }}
-            onStatusChange={(value) => {
-              setStatus(value)
-              resetToFirstPage()
-            }}
-            onOwnerChange={(value) => {
-              setOwner(value)
+      <LeadFilters
+        search={search}
+        status={status}
+        owner={owner}
+        owners={owners}
+        onSearchChange={(value) => {
+          setSearch(value)
+          resetToFirstPage()
+        }}
+        onStatusChange={(value) => {
+          setStatus(value)
+          resetToFirstPage()
+        }}
+        onOwnerChange={(value) => {
+          setOwner(value)
+          resetToFirstPage()
+        }}
+        trailing={
+          <SavedViewsDropdown
+            entityType="lead"
+            currentFilters={{ search, status, owner }}
+            onApplyView={(filters) => {
+              setSearch(filters.search ?? '')
+              setStatus((filters.status as LeadStatus | 'All') ?? 'All')
+              setOwner(filters.owner ?? 'All')
               resetToFirstPage()
             }}
           />
-        </div>
-        <SavedViewsDropdown
-          entityType="lead"
-          currentFilters={{ search, status, owner }}
-          onApplyView={(filters) => {
-            setSearch(filters.search ?? '')
-            setStatus((filters.status as LeadStatus | 'All') ?? 'All')
-            setOwner(filters.owner ?? 'All')
-            resetToFirstPage()
-          }}
-        />
-      </div>
+        }
+      />
 
       {selectedIds.size > 0 && (
         <div className="rounded-lg bg-brand-50 border border-brand-200 px-4 py-2 flex items-center justify-between">

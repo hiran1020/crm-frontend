@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Search } from 'lucide-react'
 import type { LeadStatus } from '@/types/lead'
 
@@ -9,6 +10,7 @@ interface LeadFiltersProps {
   onSearchChange: (value: string) => void
   onStatusChange: (value: LeadStatus | 'All') => void
   onOwnerChange: (value: string) => void
+  trailing?: ReactNode
 }
 
 export function LeadFilters({
@@ -19,6 +21,7 @@ export function LeadFilters({
   onSearchChange,
   onStatusChange,
   onOwnerChange,
+  trailing,
 }: LeadFiltersProps) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -72,6 +75,8 @@ export function LeadFilters({
           ))}
         </select>
       </label>
+
+      {trailing && <div className="lg:ml-auto">{trailing}</div>}
     </div>
   )
 }

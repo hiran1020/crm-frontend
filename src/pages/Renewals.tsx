@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useToast } from '@/components/common/ToastProvider'
@@ -34,8 +34,10 @@ function daysUntil(dateStr: string): number {
 
 function rowUrgency(renewal: Renewal): string {
   const days = daysUntil(renewal.renewalDate)
-  if (days < 30 && renewal.status === 'at_risk') return 'bg-red-50'
-  if (days < 60) return 'bg-yellow-50/50'
+  if (renewal.status === 'renewed' || renewal.status === 'churned') return ''
+  if (days < 0) return 'bg-red-50'
+  if (renewal.status === 'at_risk') return 'bg-orange-50'
+  if (days < 30) return 'bg-yellow-50/60'
   return ''
 }
 
@@ -170,7 +172,7 @@ function RenewalFormModal({ open, renewal, busy = false, onClose, onSubmit }: Re
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
-            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-500 resize-none" />
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100 resize-none" />
           </div>
           <div className="flex justify-end gap-3 pt-2 border-t border-border">
             <button type="button" onClick={onClose} className="rounded-md border border-border px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancel</button>
@@ -273,9 +275,18 @@ export function RenewalsPage() {
 
       {/* Table */}
       {renewalsQuery.isLoading ? (
-        <div className="space-y-2 animate-pulse">
+        <div className="rounded-lg border border-border bg-white shadow-sm overflow-hidden animate-pulse">
+          <div className="h-10 bg-slate-50 border-b border-border" />
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-12 rounded-lg bg-slate-100" />
+            <div key={i} className="flex gap-4 px-4 py-3 border-b border-border last:border-b-0">
+              <div className="h-4 flex-1 rounded bg-slate-100" />
+              <div className="h-4 w-24 rounded bg-slate-100" />
+              <div className="h-4 w-24 rounded bg-slate-100" />
+              <div className="h-4 w-20 rounded bg-slate-100" />
+              <div className="h-4 w-16 rounded bg-slate-100" />
+              <div className="h-4 w-20 rounded bg-slate-100" />
+              <div className="h-4 w-12 rounded bg-slate-100" />
+            </div>
           ))}
         </div>
       ) : renewals.length === 0 ? (
@@ -286,8 +297,8 @@ export function RenewalsPage() {
           onAction={() => setFormOpen(true)}
         />
       ) : (
-        <div className="rounded-lg border border-border bg-white shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="rounded-lg border border-border bg-white shadow-sm overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="bg-slate-50 text-xs text-slate-500">
                 <th className="px-4 py-3 text-left font-medium">Customer</th>
@@ -330,7 +341,7 @@ export function RenewalsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 w-20 rounded-full bg-slate-100 overflow-hidden">
+                          <div className="h-1.5 w-20 shrink-0 rounded-full bg-slate-100 overflow-hidden">
                             <div
                               className={['h-full rounded-full', renewal.probability >= 70 ? 'bg-emerald-500' : renewal.probability >= 40 ? 'bg-yellow-500' : 'bg-red-500'].join(' ')}
                               style={{ width: `${renewal.probability}%` }}
@@ -341,13 +352,14 @@ export function RenewalsPage() {
                       </td>
                       <td className="px-4 py-3 text-slate-600">{renewal.owner}</td>
                       <td className="px-4 py-3">
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => setEditingRenewal(renewal)}
-                            className="text-xs text-brand-600 hover:underline"
+                            className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600"
+                            aria-label={`Edit ${renewal.customerName}`}
                           >
-                            Edit
+                            <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             type="button"
@@ -356,9 +368,11 @@ export function RenewalsPage() {
                                 void deleteRenewal.mutateAsync(renewal.id).then(() => notify('Renewal deleted'))
                               }
                             }}
-                            className="text-xs text-red-600 hover:underline"
+                            disabled={deleteRenewal.isPending}
+                            className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                            aria-label={`Delete ${renewal.customerName}`}
                           >
-                            Delete
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </div>
                       </td>

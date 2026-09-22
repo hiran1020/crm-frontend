@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Search } from 'lucide-react'
 import type { CustomerStatus } from '@/types/customer'
 
@@ -9,6 +10,7 @@ interface CustomerFiltersProps {
   onSearchChange: (value: string) => void
   onStatusChange: (value: CustomerStatus | 'All') => void
   onOwnerChange: (value: string) => void
+  trailing?: ReactNode
 }
 
 export function CustomerFilters({
@@ -19,10 +21,11 @@ export function CustomerFilters({
   onSearchChange,
   onStatusChange,
   onOwnerChange,
+  trailing,
 }: CustomerFiltersProps) {
   return (
     <div className="flex flex-col gap-2">
-      {/* Search — full width on all screen sizes */}
+      {/* Search — full width */}
       <div className="relative">
         <Search
           className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -38,8 +41,8 @@ export function CustomerFilters({
         />
       </div>
 
-      {/* Filters — wrap naturally on mobile */}
-      <div className="flex flex-wrap gap-2">
+      {/* Filters row — trailing slot goes at the end (e.g. SavedViewsDropdown) */}
+      <div className="flex flex-wrap items-center gap-2">
         <select
           value={status}
           onChange={(e) => onStatusChange(e.target.value as CustomerStatus | 'All')}
@@ -64,6 +67,8 @@ export function CustomerFilters({
             </option>
           ))}
         </select>
+
+        {trailing && <div className="ml-auto">{trailing}</div>}
       </div>
     </div>
   )

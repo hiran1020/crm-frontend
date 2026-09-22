@@ -390,15 +390,32 @@ export function ReportsPage() {
             <ChartCard title="Lead Sources" subtitle="Lead count by acquisition channel">
               {isLoading ? (
                 <div className="h-64 animate-pulse rounded bg-slate-100" />
+              ) : leadSourceData.length === 0 ? (
+                <div className="flex h-64 items-center justify-center text-sm text-slate-400">No lead data yet.</div>
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                    <Pie data={leadSourceData} cx="50%" cy="50%" outerRadius={100} dataKey="value" nameKey="name" label={({ name, percent }) => `${name ?? ''} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false}>
-                      {leadSourceData.map((_entry, index) => (
-                        <Cell key={index} fill={LEAD_SOURCE_COLORS[index % LEAD_SOURCE_COLORS.length]} />
+                    <Pie
+                      data={leadSourceData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={100}
+                      dataKey="value"
+                      nameKey="name"
+                    >
+                      {leadSourceData.map((entry, index) => (
+                        <Cell key={entry.name} fill={LEAD_SOURCE_COLORS[index % LEAD_SOURCE_COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle} formatter={(value, name) => [value as number, name as string]} />
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      formatter={(value, name) => {
+                        const total = leadSourceData.reduce((s, d) => s + d.value, 0)
+                        const pct = total > 0 ? ((value as number) / total * 100).toFixed(1) : '0'
+                        return [`${value as number} (${pct}%)`, name as string]
+                      }}
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
