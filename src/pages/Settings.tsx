@@ -1,10 +1,12 @@
-import { Bell, Check, Lock, Shield, X, Plus, Trash2, ShieldCheck } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Bell, Check, Lock, Pencil, Shield, X, Plus, Trash2, ShieldCheck } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { multiFactor } from 'firebase/auth'
 import { useAuth } from '@/context/AuthContext'
 import { usePageTitle } from '@/hooks/usePageTitle'
 import { useUsers } from '@/hooks/useUsers'
+import { usePermissions } from '@/hooks/usePermissions'
 import { useCustomFields, useCreateCustomField, useDeleteCustomField } from '@/hooks/useCustomFields'
+import { useTagsQuery, useCreateTag, useUpdateTag, useDeleteTag } from '@/hooks/useTags'
 import { useToast } from '@/components/common/ToastProvider'
 import { ChangePasswordModal } from '@/components/settings/ChangePasswordModal'
 import { TwoFactorSetupModal } from '@/components/settings/TwoFactorModal'
@@ -166,8 +168,22 @@ export function SettingsPage() {
   usePageTitle('Settings')
   const { user } = useAuth()
   const { notify } = useToast()
+  const permissions = usePermissions()
   const { data: users = [] } = useUsers()
   const { data: customFields = [] } = useCustomFields()
+
+  // Tags
+  const { data: tags = [] } = useTagsQuery()
+  const createTag = useCreateTag()
+  const updateTag = useUpdateTag()
+  const deleteTag = useDeleteTag()
+  const [newTagName, setNewTagName] = useState('')
+  const [newTagColor, setNewTagColor] = useState('#6366f1')
+  const [editingTagId, setEditingTagId] = useState<string | null>(null)
+  const [editingTagName, setEditingTagName] = useState('')
+  const [editingTagColor, setEditingTagColor] = useState('')
+  const editNameRef = useRef<HTMLInputElement>(null)
+  const canManageTags = permissions.isAdmin || permissions.isManager
   const deleteField = useDeleteCustomField()
   const [showAddField, setShowAddField] = useState(false)
   const [showChangePw, setShowChangePw] = useState(false)
