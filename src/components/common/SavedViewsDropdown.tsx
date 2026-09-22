@@ -1,8 +1,8 @@
-import { Bookmark, ChevronDown, Plus, Trash2, X } from 'lucide-react'
+import { Bookmark, BookmarkCheck, ChevronDown, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useSavedViews, useCreateSavedView, useDeleteSavedView } from '@/hooks/useSavedViews'
-import type { SavedViewEntity } from '@/types/savedView'
+import type { SavedView, SavedViewEntity } from '@/types/savedView'
 
 interface Props {
   entityType: SavedViewEntity
@@ -10,11 +10,18 @@ interface Props {
   onApplyView: (filters: Record<string, string>) => void
 }
 
-export function SavedViewsDropdown({
-  entityType,
-  currentFilters,
-  onApplyView,
-}: Props) {
+/** Returns true if two filter maps are semantically equal (ignores empty/All values) */
+function filtersMatch(a: Record<string, string>, b: Record<string, string>): boolean {
+  const norm = (f: Record<string, string>) =>
+    Object.fromEntries(Object.entries(f).filter(([, v]) => v && v !== 'All' && v !== ''))
+  const na = norm(a)
+  const nb = norm(b)
+  const keys = new Set([...Object.keys(na), ...Object.keys(nb)])
+  for (const k of keys) if (na[k] !== nb[k]) return false
+  return true
+}
+
+export function SavedViewsDropdown({ entityType, currentFilters, onApplyView }: Props) {
   const { user } = useAuth()
   const [open, setOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -27,8 +34,8 @@ export function SavedViewsDropdown({
   const deleteView = useDeleteSavedView()
 
   const views = viewsQuery.data ?? []
+  const activeView = views.find((v: SavedView) => filtersMatch(v.filters, currentFilters))
 
-  // Close on click outside
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -39,7 +46,6 @@ export function SavedViewsDropdown({
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // Close on Escape
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
@@ -54,7 +60,7 @@ export function SavedViewsDropdown({
       name: newName.trim(),
       entityType,
       filters: currentFilters,
-      createdBy: user?.name ?? 'Unknown',
+      createdBy: user?.id ?? '',
     })
     setNewName('')
     setSaving(false)
@@ -65,44 +71,66 @@ export function SavedViewsDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+        className={[
+          'inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors',
+          activeView
+            ? 'border-brand-400 bg-brand-50 text-brand-700'
+            : 'border-border text-slate-700 hover:bg-slate-50',
+        ].join(' ')}
+        title={activeView ? `Active: ${activeView.name}` : 'Saved views'}
       >
-        <Bookmark className="h-4 w-4" aria-hidden />
-        Saved Views
+        {activeView
+          ? <BookmarkCheck className="h-4 w-4" aria-hidden />
+          : <Bookmark className="h-4 w-4" aria-hidden />}
+        {activeView ? activeView.name : 'Saved Views'}
         <ChevronDown className="h-3.5 w-3.5" aria-hidden />
       </button>
 
-      {open ? (
+      {open && (
         <div className="absolute left-0 top-full z-20 mt-1 w-64 rounded-lg border border-border bg-white shadow-lg">
-          {views.length === 0 ? (
+          {viewsQuery.isLoading ? (
+            <p className="px-4 py-3 text-sm text-slate-400">Loading…</p>
+          ) : viewsQuery.isError ? (
+            <p className="px-4 py-3 text-sm text-red-500">Could not load saved views.</p>
+          ) : views.length === 0 ? (
             <p className="px-4 py-3 text-sm text-slate-500">No saved views yet.</p>
           ) : (
             <ul className="divide-y divide-border">
-              {views.map((view) => (
-                <li
-                  key={view.id}
-                  className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-slate-50"
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onApplyView(view.filters)
-                      setOpen(false)
-                    }}
-                    className="flex-1 text-left text-sm text-slate-800 hover:text-brand-600"
+              {views.map((view: SavedView) => {
+                const isActive = filtersMatch(view.filters, currentFilters)
+                return (
+                  <li
+                    key={view.id}
+                    className={[
+                      'flex items-center justify-between gap-2 px-3 py-2',
+                      isActive ? 'bg-brand-50' : 'hover:bg-slate-50',
+                    ].join(' ')}
                   >
-                    {view.name}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void deleteView.mutateAsync(view.id)}
-                    className="shrink-0 rounded p-0.5 text-slate-400 hover:text-red-600"
-                    aria-label={`Delete view ${view.name}`}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
-                </li>
-              ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onApplyView(view.filters)
+                        setOpen(false)
+                      }}
+                      className={[
+                        'flex-1 text-left text-sm',
+                        isActive ? 'font-medium text-brand-700' : 'text-slate-800 hover:text-brand-600',
+                      ].join(' ')}
+                    >
+                      {view.name}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void deleteView.mutateAsync(view.id)}
+                      disabled={deleteView.isPending}
+                      className="shrink-0 rounded p-0.5 text-slate-400 hover:text-red-600 disabled:opacity-50"
+                      aria-label={`Delete view ${view.name}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           )}
 
@@ -150,7 +178,7 @@ export function SavedViewsDropdown({
             )}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   )
 }
